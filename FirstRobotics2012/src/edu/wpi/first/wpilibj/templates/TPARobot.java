@@ -115,7 +115,7 @@ public class TPARobot extends IterativeRobot {
     public void autonomousPeriodic() {
         Watchdog.getInstance().feed();
         theDriverStationLCD.println(DriverStationLCD.Line.kMain6, 1, "Autonomous Mode Called");
-        theDriverStationLCD.updateLCD();
+        theDriverStationLCD.updateLCD();    //Displays a message to DriverStationLCD when entering Autonomous mode
     }
     /*--------------------------------------------------------------------------*/
     
