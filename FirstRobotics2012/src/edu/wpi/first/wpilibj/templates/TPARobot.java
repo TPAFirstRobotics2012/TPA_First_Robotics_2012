@@ -8,6 +8,7 @@
 package edu.wpi.first.wpilibj.templates;
 
 
+import edu.wpi.first.wpilibj.DriverStationLCD;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.Encoder;
@@ -22,6 +23,7 @@ import edu.wpi.first.wpilibj.Watchdog;
  */
 public class TPARobot extends IterativeRobot {
 
+    DriverStationLCD theDriverStationLCD;                       // Object representing the driver station
     TPARobotDriver theRobotDrive;                               // Robot Drive Variable
     Joystick theRightStick;                                     // Right joystick
     Joystick theLeftStick;                                      // Left joystick
@@ -70,6 +72,12 @@ public class TPARobot extends IterativeRobot {
             System.out.println("The Encoders constructed successfully");
         }
         
+        //Initialize the DriverStationLCD
+        theDriverStationLCD = DriverStationLCD.getInstance();
+        if (DEBUG) {
+            System.out.println("DriverStationLCD initialized");
+        }
+        
         // Initialize the Drive Mode to Uninitialized
         theDriveMode = UNINITIALIZED_DRIVE;
         
@@ -106,8 +114,8 @@ public class TPARobot extends IterativeRobot {
 
     public void autonomousPeriodic() {
         Watchdog.getInstance().feed();
-        System.out.println("Autonomous mode called");
-
+        theDriverStationLCD.println(DriverStationLCD.Line.kMain6, 1, "Autonomous Mode Called");
+        theDriverStationLCD.updateLCD();
     }
     /*--------------------------------------------------------------------------*/
     
