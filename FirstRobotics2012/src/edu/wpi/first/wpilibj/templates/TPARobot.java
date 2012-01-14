@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Watchdog;
+import edu.wpi.first.wpilibj.camera.AxisCamera;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -23,6 +24,7 @@ import edu.wpi.first.wpilibj.Watchdog;
  */
 public class TPARobot extends IterativeRobot {
 
+    AxisCamera theAxisCamera;                                     // The camera
     DriverStationLCD theDriverStationLCD;                       // Object representing the driver station
     TPARobotDriver theRobotDrive;                               // Robot Drive Variable
     Joystick theRightStick;                                     // Right joystick
@@ -78,6 +80,12 @@ public class TPARobot extends IterativeRobot {
             System.out.println("DriverStationLCD initialized");
         }
         
+        //Initialize the AxisCamera
+        theAxisCamera = AxisCamera.getInstance();
+        if (DEBUG) {
+            System.out.println("AxisCamer initialized");
+        }
+        
         // Initialize the Drive Mode to Uninitialized
         theDriveMode = UNINITIALIZED_DRIVE;
         
@@ -115,7 +123,7 @@ public class TPARobot extends IterativeRobot {
     public void autonomousPeriodic() {
         Watchdog.getInstance().feed();
         theDriverStationLCD.println(DriverStationLCD.Line.kMain6, 1, "Autonomous Mode Called");
-        theDriverStationLCD.updateLCD();
+        theDriverStationLCD.updateLCD();    //Displays a message whenever in Autonomous Mode.
     }
     /*--------------------------------------------------------------------------*/
     
@@ -153,6 +161,12 @@ public class TPARobot extends IterativeRobot {
         setMaxSpeed();
         if (DEBUG == true) {
             System.out.println("setMaxSpeed called");
+        }
+        
+        //Get the image from the Axis Camera
+        getCameraImage();
+        if(DEBUG) {
+            System.out.println("getCameraImage called");
         }
         
     }
@@ -338,4 +352,20 @@ public class TPARobot extends IterativeRobot {
     }
     /*--------------------------------------------------------------------------*/
     
+    /*--------------------------------------------------------------------------*/
+    /*
+     * Author:  Gennaro De Luca
+     * Date:    11/26/2011 (Gennaro De Luca)
+     * Purpose: Do AxisCamera stuff
+     * Inputs:  None
+     * Outputs: None
+     */  
+     
+    public void getCameraImage() {
+        theAxisCamera.writeResolution(AxisCamera.ResolutionT.k160x120);
+        theAxisCamera.writeBrightness(0);
+        DriverStationLCD.getInstance().updateLCD();
+    }
+    
+     /*--------------------------------------------------------------------------*/
 }
