@@ -42,13 +42,19 @@ public class TPARobotDriver extends RobotDrive {
     
     TPARobotDriver(SpeedController leftMotor, SpeedController rightMotor) {
         super(leftMotor, rightMotor);
-        //Need to implement Speed Controllers for brake
+        theFrontLeftJaguar = (Jaguar) leftMotor;
+        theRearLeftJaguar = (Jaguar) leftMotor;
+        theFrontRightJaguar = (Jaguar) rightMotor;
+        theRearRightJaguar = (Jaguar) rightMotor;
     }
     
     TPARobotDriver(SpeedController frontLeftMotor, SpeedController rearLeftMotor,
                    SpeedController frontRightMotor, SpeedController rearRightMotor) {
         super(frontLeftMotor, rearLeftMotor, frontRightMotor, rearRightMotor);
-        //Need to implement Speed Controllers for brake
+        theFrontLeftJaguar = (Jaguar) frontLeftMotor;
+        theRearLeftJaguar = (Jaguar) rearLeftMotor;
+        theFrontRightJaguar = (Jaguar) frontRightMotor;
+        theRearRightJaguar = (Jaguar) rearRightMotor;
     }
     /*--------------------------------------------------------------------------*/
     
