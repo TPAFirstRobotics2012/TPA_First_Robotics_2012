@@ -14,6 +14,9 @@ import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Watchdog;
 import edu.wpi.first.wpilibj.camera.AxisCamera;
+import edu.wpi.first.wpilibj.camera.AxisCameraException;
+import edu.wpi.first.wpilibj.image.ColorImage;
+import edu.wpi.first.wpilibj.image.NIVisionException;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -24,6 +27,7 @@ import edu.wpi.first.wpilibj.camera.AxisCamera;
  */
 public class TPARobot extends IterativeRobot {
 
+    ColorImage theColorImage;
     AxisCamera theAxisCamera;                                     // The camera
     DriverStationLCD theDriverStationLCD;                       // Object representing the driver station
     TPARobotDriver theRobotDrive;                               // Robot Drive Variable
@@ -81,9 +85,27 @@ public class TPARobot extends IterativeRobot {
         }
         
         //Initialize the AxisCamera
-        theAxisCamera = AxisCamera.getInstance();
+        theAxisCamera = AxisCamera.getInstance(); 
+        try {
+        theAxisCamera.writeResolution(AxisCamera.ResolutionT.k320x240);        
+        }
+        catch(NullPointerException b) {
+            System.out.println("1: " + b);
+        }
+        finally {
+            System.out.println("Resolution attempted");
+        }
+        try {
+            theAxisCamera.writeBrightness(50);
+        }
+        catch(NullPointerException c) {
+            System.out.println("2: " + c);
+        }
+        finally {
+            System.out.println("Brightness attempted");
+        }
         if (DEBUG) {
-            System.out.println("AxisCamer initialized");
+            System.out.println("AxisCamera initialized");
         }
         
         // Initialize the Drive Mode to Uninitialized
@@ -164,7 +186,7 @@ public class TPARobot extends IterativeRobot {
         }
         
         //Get the image from the Axis Camera
-        getCameraImage();
+        DriverStationLCD.getInstance().updateLCD();
         if(DEBUG) {
             System.out.println("getCameraImage called");
         }
@@ -350,22 +372,5 @@ public class TPARobot extends IterativeRobot {
         brake(theLeftSpeedOutput, theRightSpeedOutput);
         }
     }
-    /*--------------------------------------------------------------------------*/
-    
-    /*--------------------------------------------------------------------------*/
-    /*
-     * Author:  Gennaro De Luca
-     * Date:    11/26/2011 (Gennaro De Luca)
-     * Purpose: Do AxisCamera stuff
-     * Inputs:  None
-     * Outputs: None
-     */  
-     
-    public void getCameraImage() {
-        theAxisCamera.writeResolution(AxisCamera.ResolutionT.k160x120);
-        theAxisCamera.writeBrightness(0);
-        DriverStationLCD.getInstance().updateLCD();
-    }
-    
-     /*--------------------------------------------------------------------------*/
+    /*--------------------------------------------------------------------------*
 }
