@@ -13,6 +13,13 @@ import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Watchdog;
+import edu.wpi.first.wpilibj.camera.AxisCamera;
+import edu.wpi.first.wpilibj.camera.AxisCameraException;
+import edu.wpi.first.wpilibj.image.ColorImage;
+import edu.wpi.first.wpilibj.image.EllipseDescriptor;
+import edu.wpi.first.wpilibj.image.EllipseMatch;
+import edu.wpi.first.wpilibj.image.MonoImage;
+import edu.wpi.first.wpilibj.image.NIVisionException;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -23,41 +30,47 @@ import edu.wpi.first.wpilibj.Watchdog;
  */
 public class TPARobot extends IterativeRobot {
 
-    DriverStationLCD theDriverStationLCD;                       // Object representing the driver station
-    TPARobotDriver theRobotDrive;                               // Robot Drive Variable
-    Joystick theRightStick;                                     // Right joystick
-    Joystick theLeftStick;                                      // Left joystick
-    Encoder theRightEncoder;                                    // Right E4P Motion Sensor
-    Encoder theLeftEncoder;                                     // Left E4P Motion Sensor
-    static final boolean DEBUG = true;                          // Debug Trigger
-    static final double STOP_VALUE = 0.1;                       // Value drive motors are sent when stopping
-    
+    ColorImage theColorImage;                                   // Image from camera
+    AxisCamera theAxisCamera;                                   // The camera
+    DriverStationLCD theDriverStationLCD;                       // Object representing the driver station   
     // Drive mode selection
     int theDriveMode;                                           // The actual drive mode that is currently selected.
     static final int UNINITIALIZED_DRIVE = 0;                   // Value when no drive mode is selected
     static final int ARCADE_DRIVE = 1;                          // Value when arcade mode is selected 
     static final int TANK_DRIVE = 2;                            // Value when tank drive is selected
     public double theMaxSpeed;                                  // Multiplier for speed, determined by Z-Axis on left stick
+    static final boolean DEBUG = true;                          // Debug Trigger
+    static final double STOP_VALUE = 0.1;                       // Value sent to each motor when the robot is stopping
+    double theFrontLeftOutput;                                  // The output sent to the front left motor
+    double theRearLeftOutput;                                   // The output sent to the rear left motor
+    double theFrontRightOutput;                                 // The output sent to the front right motor
+    double theRearRightOutput;                                  // The output sent to the rear right motor
+    Encoder theFrontLeftEncoder;                                // The encoder at the front left motor
+    Encoder theRearLeftEncoder;                                 // The encoder at the rear left motor
+    Encoder theFrontRightEncoder;                               // The encoder at the front right motor
+    Encoder theRearRightEncoder;                                // The encoder at the rear right motor
+    Joystick theRightStick;                                     // Right joystick
+    Joystick theLeftStick;                                      // Left joystick
+    TPARobotDriver theRobotDrive;                               // Robot Drive System
+    double theDriveDirection;                                   // Direction the robot will move
+    double theDriveMagnitude;                                   // Speed the robot will move at
+    double theDriveRotation;                                    // Value the robot will rotate
+    EllipseDescriptor theEllipseDescriptor;                     // Define the ball
 
 
+    
     /*--------------------------------------------------------------------------*/
     /*
-    * Author:  Marissa Beene
-    * Date:    1/13/2012
-    * Purpose: Robot Initialization Function. This function is run once when the
-    *          robot is first started up and should be used for any initialization
-    *          code.
-    * Inputs:  None
-    * Outputs: None
-    */
+     * Author:  Marissa Beene
+     * Date:    1/13/2012
+     * Purpose: Robot Initialization Function. This function is run once when the
+     *          robot is first started up and should be used for any initialization
+     *          code.
+     * Inputs:  None
+     * Outputs: None
+     */
     public void robotInit() {
-        
-        // Create a drive system using standard right/left robot drive on PWMS 1 and 2
-        theRobotDrive = new TPARobotDriver(1,2);
-        if (DEBUG == true){
-            System.out.println("TheRobotDrive constructed successfully");
-        }
-        
+               
         // Define joysticks being used at USB port #1 and USB port #2 on the Drivers Station
 	theRightStick = new Joystick(1);
 	theLeftStick = new Joystick(2);
@@ -65,21 +78,55 @@ public class TPARobot extends IterativeRobot {
            System.out.println("The Joysticks constructed successfully"); 
         }
         
-        // Defines two E4P Motion Sensors at ports 1,2,3, and 4
-        theLeftEncoder = new Encoder(1,2);
-        theRightEncoder = new Encoder(3,4);
+        // Define a robot drive object with the front left motor at port 1, rear left at port 2, front right at port 3, and rear right at port 4
+        theRobotDrive = new TPARobotDriver(1,2,3,4);
         if (DEBUG == true){
-            System.out.println("The Encoders constructed successfully");
+            System.out.println("theRobotDrive constructed successfully");
         }
-        
+
         //Initialize the DriverStationLCD
         theDriverStationLCD = DriverStationLCD.getInstance();
         if (DEBUG) {
             System.out.println("DriverStationLCD initialized");
         }
         
+        //Initialize the AxisCamera
+        theAxisCamera = AxisCamera.getInstance(); 
+        theAxisCamera.writeResolution(AxisCamera.ResolutionT.k320x240);        
+        theAxisCamera.writeBrightness(50);
+        
+        if (DEBUG) {
+            System.out.println("AxisCamera initialized");
+        }
+        
+        try{
+            if (theAxisCamera.freshImage()){
+                theColorImage = theAxisCamera.getImage();
+            }
+        }
+        catch(NIVisionException b) {
+            System.out.println(b);
+        }
+        catch(AxisCameraException b) {
+            System.out.println(b);
+        }
         // Initialize the Drive Mode to Uninitialized
         theDriveMode = UNINITIALIZED_DRIVE;
+        
+        // Default the robot to not move
+        theDriveDirection = 0;
+        theDriveMagnitude = 0;
+        theDriveRotation = 0;
+        if (DEBUG == true){
+            System.out.println("The robot set to not move");
+        }
+        
+        // Define the ball
+        theEllipseDescriptor = new EllipseDescriptor(
+            /* minMajorRadius */ 3.75,
+            /* maxMajorRadius */ 4.25,
+            /* minMinorRadius */ 3.75,
+            /* maxMinorRadius */ 4.25);
         
         if (DEBUG == true){
         System.out.println("RobotInit() completed.\n");
@@ -90,13 +137,12 @@ public class TPARobot extends IterativeRobot {
     
     /*--------------------------------------------------------------------------*/
     /*
-    * Author:  Marissa Beene
-    * Date:    1/13/2012
-    * Purpose: TPARobot Constructor
-    * Inputs:  None
-    * Outputs: None
-    * 11/07/2011 - jd - Added comment to test github merge.
-    */
+     * Author:  Marissa Beene
+     * Date:    1/13/2012
+     * Purpose: TPARobot Constructor
+     * Inputs:  None
+     * Outputs: None
+     */
     public void TPARobot(){
     }
     /*--------------------------------------------------------------------------*/
@@ -113,6 +159,7 @@ public class TPARobot extends IterativeRobot {
      */
 
     public void autonomousPeriodic() {
+        
         Watchdog.getInstance().feed();
         theDriverStationLCD.println(DriverStationLCD.Line.kMain6, 1, "Autonomous Mode Called");
         theDriverStationLCD.updateLCD();    //Displays a message to DriverStationLCD when entering Autonomous mode
@@ -137,65 +184,29 @@ public class TPARobot extends IterativeRobot {
             System.out.println("Teleop Periodic Watchdog Fed");
         }
         
-        // Determine whether arcade drive or tank drive is in use
-        setDriveMode();
-        if (DEBUG == true){
-            System.out.println("setDriveMode called");
-        }
-        
-        // Brake the robot when no signal is sent
-        brakeOnNeutral();
-        if (DEBUG == true){
-            System.out.println("brakeOnNeutral called");
-        }
-        
         //Set the multiplier for max speed
         setMaxSpeed();
         if (DEBUG == true) {
             System.out.println("setMaxSpeed called");
         }
-        
-    }
-    /*--------------------------------------------------------------------------*/
-    
-    
-    /*--------------------------------------------------------------------------*/
-    /*
-     * Author:  Daniel Hughes
-     * Date:    1/13/2012 (Daniel Hughes)
-     * Purpose: To determine the appropriate drive mode based on the "Z" wheel on 
-     *          the right joystick. If the "Z" wheel is up (negative) Robot is put
-     *          in arcade mode. Otherwise, robot is put in tank mode.
-     * Inputs:  None
-     * Outputs: None
-     */
-        
-    public void setDriveMode(){
-        
-        // determine if tank or arcade mode, based upon position of "Z" wheel on kit joystick
-        if (theLeftStick.getZ() <= 0) {    // Logitech Attack3 has z-polarity reversed; up is negative
-            // use arcade drive
-            if (DEBUG == true){
-                System.out.println("theRightStick.getZ called" );
-            }
-            theRobotDrive.arcadeDrive(theRightStick, false);	// drive with arcade style (use right stick)
-            if (theDriveMode != ARCADE_DRIVE) {
-                // if newly entered arcade drive, print out a message
-                System.out.println("Arcade Drive\n");
-                theDriveMode = ARCADE_DRIVE;
-            }
-        } else {
-            // use tank drive
-            theRobotDrive.tankDrive(theLeftStick, theRightStick);	// drive with tank style
-            if (theDriveMode != TANK_DRIVE) {
-                // if newly entered tank drive, print out a message
-                System.out.println("Tank Drive\n");
-                theDriveMode = TANK_DRIVE;
-            }
+        //Get the image from the Axis Camera
+        DriverStationLCD.getInstance().updateLCD();
+        if(DEBUG) {
+            System.out.println("getCameraImage called");
         }
+        
+        try {
+            System.out.println(findCircle());
+        }
+        catch(NIVisionException b) {
+            System.out.println(b);
+        }
+        
     }
     /*--------------------------------------------------------------------------*/
     
+    
+  
     
     /*--------------------------------------------------------------------------*/
     /*
@@ -209,14 +220,13 @@ public class TPARobot extends IterativeRobot {
      */    
     public void setMaxSpeed(){
         
-        
-        if (theRightStick.getZ() <= 0) {   // Logitech Attack3 has z-polarity reversed; up is negative
+        if (theLeftStick.getZ() <= 0) {    // Logitech Attack3 has z-polarity reversed; up is negative
             theMaxSpeed = 1;               //set the multiplier to default value of 1
             if (DEBUG == true){
                 System.out.println("theLeftStick.getZ called");
             }
         }
-        else if (theRightStick.getZ() > 0) {
+        else if (theLeftStick.getZ() > 0) {
             theMaxSpeed = 0.5;             //set the multiplier to half default, 0.5
             if (DEBUG == true) {
                 System.out.println("theLeftStick.getZ called");
@@ -226,116 +236,42 @@ public class TPARobot extends IterativeRobot {
     }
     /*--------------------------------------------------------------------------*/
     
-    
     /*--------------------------------------------------------------------------*/
     /*
-     * Author:  Marissa Beene
-     * Date:    10/30/2011 (Marissa Beene)
-     * Purpose: To use the motors to brake the robot. Takes the speed from the 
-     *          each motor and sends the reverse signal back.
-     * Inputs:  Double aSpeedRight - the speed of the right motor
-     *          Double aSpeedLeft - the speed of the left motor
-     * Outputs: None
-     */
-    
-    public void brake(double aSpeedLeft, double aSpeedRight){
-        theRobotDrive.tankDrive(-aSpeedLeft, -aSpeedRight); //drive the robot at opposite values
-        }
-    /*--------------------------------------------------------------------------*/
-    
-    
-    /*--------------------------------------------------------------------------*/
-    
-    /*
-     * Author:  Marissa Beene
-     * Date:    10/30/11
-     * Purpose: To determine if there is no signal. First determines the drive
-     *          mode and discards the left stick if in arcade mode. If there is 
-     *          no signal to the drive train, it will return true, otherwise it 
-     *          will return false
-     * Inputs:  Joystick aRightStick  - the right joystick
-     *          Joystick aLeftStick - the left joystick
-     * Outputs: Boolean - returns true if the drive train is not sent a signal
-     */
-    
-    public boolean isNeutral(Joystick aRightStick, Joystick aLeftStick){
-        if (DEBUG == true){
-            System.out.println("isNeutral Called");
-        }
-        if(theDriveMode == ARCADE_DRIVE){ //if arcade drive
-            if (DEBUG == true){
-                System.out.println("Arcade Drive Recognized by isNeutral");
-            }
-            if(aRightStick.getY() == 0 && aRightStick.getX() == 0){ //there is no input
-                return true;
-            }
-            else{
-                return false;
-            }
-        }
-        else if(theDriveMode == TANK_DRIVE){ //if tank drive
-            if (DEBUG == true){
-                System.out.println("Tank Drive Recognized by isNeutral");
-            }
-            if(aRightStick.getY() == 0 && aLeftStick.getY() == 0){
-                return true;
-            }
-            else{
-                return false;
-            }
-        }
-        else{
-            return false;
-        } 
-    }
-    /*--------------------------------------------------------------------------*/
-    
-    
-    /*--------------------------------------------------------------------------*/
-    /*
-     * Author:  Marissa Beene
-     * Date:    11/5/11
-     * Purpose: To brake the robot if there is no signal in arcade mode. If the 
-     *          wheel is not considered stopped, it will read the direction that the wheel
-     *          is turning and send it the stop value in the other direction.
+     * Author:  Gennaro
+     * Date:    1/15/2012  
+     * Purpose: Test to see if the camera can see the ball
      * Inputs:  None
-     * Outputs: None
-     */
+     * Outputs: Boolean - does the camera see the ball.
+     */    
     
-    public void brakeOnNeutral(){
+    public boolean findCircle() throws NIVisionException {
         
-        double theLeftSpeedOutput = 0; // value the left motor will be sent
-        double theRightSpeedOutput = 0; // value the right motor will be sent
-        
-        if (DEBUG == true){
-            System.out.println("brakeOnNeutral called");
+        //int width = theColorImage.getWidth();
+        //int height = theColorImage.getHeight();
+        MonoImage theMonoImage = theColorImage.getLuminancePlane();
+        EllipseMatch[] theEllipseMatch = theMonoImage.detectEllipses(theEllipseDescriptor);
+        theMonoImage.free();
+        if(theEllipseMatch.length>0) {
+            return true;
         }
-        
-        if(isNeutral(theRightStick, theLeftStick)){ // if no signal is sent to the robot
-            
-            // get the direction of the left motor and store the stop value vector to theLeftSpeedOutput
-            if(!theLeftEncoder.getStopped()){
-                if(theLeftEncoder.getDirection()){
-                    theLeftSpeedOutput = STOP_VALUE;
-                }
-                else{
-                    theLeftSpeedOutput = -STOP_VALUE;
-                }
-            }
-            
-            // get the direction of the right motor and store a stop value vector to theRightSpeedOutput
-            if(!theRightEncoder.getStopped()){
-                if(theRightEncoder.getDirection()){
-                    theRightSpeedOutput = STOP_VALUE;
-                }
-                else{
-                    theRightSpeedOutput = -STOP_VALUE;
-                }
-            }
-        // brake the robot at the value of the stop value
-        brake(theLeftSpeedOutput, theRightSpeedOutput);
+        else {
+            return false;
         }
     }
+    
     /*--------------------------------------------------------------------------*/
     
+    /*--------------------------------------------------------------------------*/
+    /*
+     * Author:  
+     * Date:    
+     * Purpose: 
+     * Inputs:  
+     * Outputs: 
+     */    
+    
+    /*--------------------------------------------------------------------------*/
+
+
 }
