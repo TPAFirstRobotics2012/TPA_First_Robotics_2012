@@ -5,6 +5,7 @@
 package edu.wpi.first.wpilibj.templates;
 
 import edu.wpi.first.wpilibj.RobotDrive;
+import edu.wpi.first.wpilibj.Jaguar;
 import edu.wpi.first.wpilibj.SpeedController;
 
 /**
@@ -14,25 +15,40 @@ import edu.wpi.first.wpilibj.SpeedController;
 public class TPARobotDriver extends RobotDrive {
     
     public static double kDefaultMinOutput=0.1; //Min value for the Speed Multiplier
-    public static double kDefaultMaxOutput=1;   //Max value for the Speed Multiplier
-    
+    public static double kDefaultMaxOutput=1;   //Max value for the Speed Multiplier\
+    public Jaguar theFrontLeftJaguar;           //Front left motor
+    public Jaguar theRearLeftJaguar;            //Rear left motor
+    public Jaguar theFrontRightJaguar;          //Front right motor
+    public Jaguar theRearRightJaguar;           //Rear right motor
+
     //Constructors:
     TPARobotDriver(final int leftMotorChannel, final int rightMotorChannel){
         super(leftMotorChannel, rightMotorChannel);
+        theFrontLeftJaguar = new Jaguar(leftMotorChannel);
+        theRearLeftJaguar = new Jaguar(leftMotorChannel);
+        theFrontRightJaguar = new Jaguar(rightMotorChannel);
+        theRearRightJaguar = new Jaguar(rightMotorChannel);
+        
     }
     
     TPARobotDriver(final int frontLeftMotor, final int rearLeftMotor,
                    final int frontRightMotor, final int rearRightMotor) {
         super(frontLeftMotor, rearLeftMotor, frontRightMotor, rearRightMotor);
+        theFrontLeftJaguar = new Jaguar(frontLeftMotor);
+        theRearLeftJaguar = new Jaguar(rearLeftMotor);
+        theFrontRightJaguar = new Jaguar(frontRightMotor);
+        theRearRightJaguar = new Jaguar(rearRightMotor);
     }
     
     TPARobotDriver(SpeedController leftMotor, SpeedController rightMotor) {
         super(leftMotor, rightMotor);
+        //Need to implement Speed Controllers for brake
     }
     
     TPARobotDriver(SpeedController frontLeftMotor, SpeedController rearLeftMotor,
                    SpeedController frontRightMotor, SpeedController rearRightMotor) {
         super(frontLeftMotor, rearLeftMotor, frontRightMotor, rearRightMotor);
+        //Need to implement Speed Controllers for brake
     }
     /*--------------------------------------------------------------------------*/
     
@@ -55,5 +71,46 @@ public class TPARobotDriver extends RobotDrive {
         }
         m_maxOutput=aMaxSpeed;                  //sets the multiplier to be the tested value
     }
-   /*--------------------------------------------------------------------------*/   
+   /*--------------------------------------------------------------------------*/
+    
+       /*--------------------------------------------------------------------------*/
+   /*
+    * Author:  Marissa Beene
+    * Date:    10/30/2011 (Marissa Beene)
+    * Purpose: To use the motors to brake the robot. Takes the speed from the 
+    *          each motor and sends the reverse signal back.
+    * Inputs:  Double aSpeedRight - the speed of the right motor
+    *          Double aSpeedLeft - the speed of the left motor
+    *          RobotDrive aRobotDrive - the drive system of the robot
+    * Outputs: None
+    */
+    
+    public void twoMotorBrake(double aSpeedLeft, double aSpeedRight, RobotDrive aRobotDrive){
+        aRobotDrive.tankDrive(-aSpeedLeft, -aSpeedRight); //drive the robot at opposite values
+    }
+    /*--------------------------------------------------------------------------*/
+   
+    
+    
+    /*--------------------------------------------------------------------------*/
+    /*
+     * Author:  Marissa Beene
+     * Date:    1/14/2012
+     * Purpose: To use the motors to brake the robot when it is using mecanum wheels.
+     *          Takes the speed from each motor and sends the reverse signal back.
+     * Inputs:  None
+     * Outputs: None
+     */
+    
+    public void mecanumBrake(double aSpeedFrontLeft, double aSpeedRearLeft, double aSpeedFrontRight, double aSpeedRearRight){
+        theFrontLeftJaguar.set(-aSpeedFrontLeft);
+        theFrontRightJaguar.set(-aSpeedFrontRight);
+        theRearLeftJaguar.set(-aSpeedRearLeft);
+        theRearRightJaguar.set(-aSpeedRearRight);
+    }
+
+    /*--------------------------------------------------------------------------*/
+
+    
+    
 }
