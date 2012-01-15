@@ -14,6 +14,12 @@ import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Watchdog;
 import edu.wpi.first.wpilibj.camera.AxisCamera;
+import edu.wpi.first.wpilibj.camera.AxisCameraException;
+import edu.wpi.first.wpilibj.image.ColorImage;
+import edu.wpi.first.wpilibj.image.EllipseDescriptor;
+import edu.wpi.first.wpilibj.image.EllipseMatch;
+import edu.wpi.first.wpilibj.image.MonoImage;
+import edu.wpi.first.wpilibj.image.NIVisionException;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -24,6 +30,7 @@ import edu.wpi.first.wpilibj.camera.AxisCamera;
  */
 public class TPARobot extends IterativeRobot {
 
+    ColorImage theColorImage;                                   // Image from camera
     AxisCamera theAxisCamera;                                   // The camera
     DriverStationLCD theDriverStationLCD;                       // Object representing the driver station   
     // Drive mode selection
@@ -48,6 +55,7 @@ public class TPARobot extends IterativeRobot {
     double theDriveDirection;                                   // Direction the robot will move
     double theDriveMagnitude;                                   // Speed the robot will move at
     double theDriveRotation;                                    // Value the robot will rotate
+    EllipseDescriptor theEllipseDescriptor;                     // Define the ball
 
 
     
@@ -91,6 +99,15 @@ public class TPARobot extends IterativeRobot {
             System.out.println("AxisCamera initialized");
         }
         
+        try{
+            theColorImage = theAxisCamera.getImage();
+        }
+        catch(NIVisionException b) {
+            System.out.println(b);
+        }
+        catch(AxisCameraException b) {
+            System.out.println(b);
+        }
         // Initialize the Drive Mode to Uninitialized
         theDriveMode = UNINITIALIZED_DRIVE;
         
@@ -101,6 +118,13 @@ public class TPARobot extends IterativeRobot {
         if (DEBUG == true){
             System.out.println("The robot set to not move");
         }
+        
+        // Define the ball
+        theEllipseDescriptor = new EllipseDescriptor(
+            /* minMajorRadius */ 3.75,
+            /* maxMajorRadius */ 4.25,
+            /* minMinorRadius */ 3.75,
+            /* maxMinorRadius */ 4.25);
         
         if (DEBUG == true){
         System.out.println("RobotInit() completed.\n");
@@ -172,6 +196,12 @@ public class TPARobot extends IterativeRobot {
         driveRobot();
         if(DEBUG == true){
             System.out.println("driveRobot called");
+        }
+        try {
+            System.out.println(findCircle());
+        }
+        catch(NIVisionException b) {
+            System.out.println(b);
         }
         
     }
@@ -308,7 +338,31 @@ public class TPARobot extends IterativeRobot {
 
     /*--------------------------------------------------------------------------*/
     
+    /*--------------------------------------------------------------------------*/
+    /*
+     * Author:  Gennaro
+     * Date:    1/15/2012  
+     * Purpose: Test to see if the camera can see the ball
+     * Inputs:  None
+     * Outputs: Boolean - does the camera see the ball.
+     */    
     
+    public boolean findCircle() throws NIVisionException {
+        
+        //int width = theColorImage.getWidth();
+        //int height = theColorImage.getHeight();
+        MonoImage theMonoImage = theColorImage.getLuminancePlane();
+        EllipseMatch[] theEllipseMatch = theMonoImage.detectEllipses(theEllipseDescriptor);
+        theMonoImage.free();
+        if(theEllipseMatch.length>0) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+    
+    /*--------------------------------------------------------------------------*/
     
     /*--------------------------------------------------------------------------*/
     /*
