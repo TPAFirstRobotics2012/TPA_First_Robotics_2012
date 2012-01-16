@@ -44,11 +44,7 @@ public class TPARobot extends IterativeRobot {
     double theRearLeftOutput;                                   // The output sent to the rear left motor
     double theFrontRightOutput;                                 // The output sent to the front right motor
     double theRearRightOutput;                                  // The output sent to the rear right motor
-    Encoder theFrontLeftEncoder;                                // The encoder at the front left motor
-    Encoder theRearLeftEncoder;                                 // The encoder at the rear left motor
-    Encoder theFrontRightEncoder;                               // The encoder at the front right motor
-    Encoder theRearRightEncoder;                                // The encoder at the rear right motor
-    Joystick theRightStick;                                     // Right joystick
+                    Joystick theRightStick;                                     // Right joystick
     Joystick theLeftStick;                                      // Left joystick
     TPARobotDriver theRobotDrive;                               // Robot Drive System
     double theDriveDirection;                                   // Direction the robot will move
@@ -258,7 +254,7 @@ public class TPARobot extends IterativeRobot {
      * Outputs: Boolean - does the camera see the ball.
      */    
     
-    public boolean findCircle() throws NIVisionException {
+    public boolean findCircle(ColorImage theColorImage) throws NIVisionException {
         
         //int width = theColorImage.getWidth();
         //int height = theColorImage.getHeight();
