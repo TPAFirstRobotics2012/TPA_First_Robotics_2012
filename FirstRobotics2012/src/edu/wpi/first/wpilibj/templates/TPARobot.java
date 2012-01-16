@@ -196,11 +196,11 @@ public class TPARobot extends IterativeRobot {
         }
         
         try {
-            System.out.println(findCircle());
+            System.out.println(findCircle(theColorImage));
         }
         catch(NIVisionException b) {
             System.out.println(b);
-        }
+        } 
         
     }
     /*--------------------------------------------------------------------------*/
@@ -245,7 +245,7 @@ public class TPARobot extends IterativeRobot {
      * Outputs: Boolean - does the camera see the ball.
      */    
     
-    public boolean findCircle() throws NIVisionException {
+    public boolean findCircle(ColorImage aColorImage) throws NIVisionException {
         
         //int width = theColorImage.getWidth();
         //int height = theColorImage.getHeight();
