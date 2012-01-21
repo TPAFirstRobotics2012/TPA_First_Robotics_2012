@@ -23,19 +23,21 @@ public class TPARobotDriver extends RobotDrive {
     //Constructors:
     TPARobotDriver(final int leftMotorChannel, final int rightMotorChannel){
         super(leftMotorChannel, rightMotorChannel);
+        /* Need to implement jaguar for other mechanum wheels
         theFrontLeftJaguar = new Jaguar(leftMotorChannel);
         theRearLeftJaguar = new Jaguar(leftMotorChannel);
         theFrontRightJaguar = new Jaguar(rightMotorChannel);
-        theRearRightJaguar = new Jaguar(rightMotorChannel);
+        theRearRightJaguar = new Jaguar(rightMotorChannel);*/
     }
     
     TPARobotDriver(final int frontLeftMotor, final int rearLeftMotor,
                    final int frontRightMotor, final int rearRightMotor) {
         super(frontLeftMotor, rearLeftMotor, frontRightMotor, rearRightMotor);
-        //theFrontLeftJaguar = new Jaguar(frontLeftMotor);
-        //theRearLeftJaguar = new Jaguar(rearLeftMotor);
-        //theFrontRightJaguar = new Jaguar(frontRightMotor);
-        //theRearRightJaguar = new Jaguar(rearRightMotor);
+        // Implements the motor channels as jaguars for mecanum compatibility
+        theFrontLeftJaguar = new Jaguar(frontLeftMotor);
+        theRearLeftJaguar = new Jaguar(rearLeftMotor);
+        theFrontRightJaguar = new Jaguar(frontRightMotor);
+        theRearRightJaguar = new Jaguar(rearRightMotor);
     }
     
     TPARobotDriver(SpeedController leftMotor, SpeedController rightMotor) {
