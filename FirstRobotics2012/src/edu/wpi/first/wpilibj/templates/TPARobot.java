@@ -192,7 +192,12 @@ public class TPARobot extends IterativeRobot {
         theDriveDirection = theLeftStick.getDirectionDegrees(); // Set the direction to the value of the left stick
         theDriveMagnitude = theLeftStick.getMagnitude();    // Set the magnitude to the value of the left stick
         theDriveRotation = theRightStick.getDirectionDegrees(); // Set the rotation to the value of the right stick
-        theRobotDrive.mecanumDrive_Polar(theDriveDirection, theDriveMagnitude, theDriveRotation);
+        theRobotDrive.mecanumDrive_Polar(theDriveMagnitude, theDriveDirection, theDriveRotation);
+        if (DEBUG == true){
+        System.out.println("The drive rotation in degrees" + theDriveRotation);
+        System.out.println("The drive magnitude is" + theDriveMagnitude);
+        System.out.println("The drive direction is" + theDriveDirection);
+        }
     }
     /*--------------------------------------------------------------------------*/
     
