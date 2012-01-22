@@ -75,6 +75,17 @@ public class TPARobot extends IterativeRobot {
         if (DEBUG == true){
             System.out.println("theRobotDrive constructed successfully");
         }
+        
+/*
+        // Defines four E4P Motion Sensors at ports 1,2,3,4,5,6,7, and 8
+        theFrontLeftEncoder = new Encoder(1,2);
+        theRearLeftEncoder = new Encoder(3,4);
+        theFrontRightEncoder = new Encoder(5,6);
+        theRearRightEncoder = new Encoder(7,8);
+        if (DEBUG == true){
+            System.out.println("The Encoders constructed successfully");
+        }
+ */
 
         //Initialize the DriverStationLCD
         theDriverStationLCD = DriverStationLCD.getInstance();
@@ -86,10 +97,10 @@ public class TPARobot extends IterativeRobot {
         theAxisCamera = AxisCamera.getInstance(); 
         theAxisCamera.writeResolution(AxisCamera.ResolutionT.k320x240);        
         theAxisCamera.writeBrightness(50);
-        
         if (DEBUG) {
             System.out.println("AxisCamera initialized");
         }
+        
         // Initialize the Drive Mode to Uninitialized
         theDriveMode = UNINITIALIZED_DRIVE;
         
@@ -173,6 +184,7 @@ public class TPARobot extends IterativeRobot {
         if(DEBUG == true){
             System.out.println("driveRobot called");
         }
+        brakeOnNeutral();
         
     }
     /*--------------------------------------------------------------------------*/
@@ -192,7 +204,7 @@ public class TPARobot extends IterativeRobot {
         theDriveDirection = theLeftStick.getDirectionDegrees(); // Set the direction to the value of the left stick
         theDriveMagnitude = theLeftStick.getMagnitude();    // Set the magnitude to the value of the left stick
         theDriveRotation = theRightStick.getDirectionDegrees(); // Set the rotation to the value of the right stick
-        theRobotDrive.mecanumDrive_Polar(theDriveDirection, theDriveMagnitude, theDriveRotation);
+        theRobotDrive.mecanumDrive_Polar(theDriveMagnitude, theDriveDirection, theDriveRotation);
     }
     /*--------------------------------------------------------------------------*/
     
