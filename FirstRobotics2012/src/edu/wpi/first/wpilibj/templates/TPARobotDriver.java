@@ -15,49 +15,29 @@ import edu.wpi.first.wpilibj.SpeedController;
 public class TPARobotDriver extends RobotDrive {
     
     public static double kDefaultMinOutput=0.1; //Min value for the Speed Multiplier
-    public static double kDefaultMaxOutput=1;   //Max value for the Speed Multiplier\
-    public Jaguar theFrontLeftJaguar;           //Front left motor
-    public Jaguar theRearLeftJaguar;            //Rear left motor
-    public Jaguar theFrontRightJaguar;          //Front right motor
-    public Jaguar theRearRightJaguar;           //Rear right motor
+    
 
     //Constructors:
     TPARobotDriver(final int leftMotorChannel, final int rightMotorChannel){
         super(leftMotorChannel, rightMotorChannel);
-        theFrontLeftJaguar = new Jaguar(leftMotorChannel);
-        theRearLeftJaguar = new Jaguar(leftMotorChannel);
-        theFrontRightJaguar = new Jaguar(rightMotorChannel);
-        theRearRightJaguar = new Jaguar(rightMotorChannel);
         
-    }
-    
-    TPARobotDriver(final int frontLeftMotor, final int rearLeftMotor,
-                   final int frontRightMotor, final int rearRightMotor) {
-        super(frontLeftMotor, rearLeftMotor, frontRightMotor, rearRightMotor);
-        theFrontLeftJaguar = new Jaguar(frontLeftMotor);
-        theRearLeftJaguar = new Jaguar(rearLeftMotor);
-        theFrontRightJaguar = new Jaguar(frontRightMotor);
-        theRearRightJaguar = new Jaguar(rearRightMotor);
     }
     
     TPARobotDriver(SpeedController leftMotor, SpeedController rightMotor) {
         super(leftMotor, rightMotor);
-        theFrontLeftJaguar = (Jaguar) leftMotor;
-        theRearLeftJaguar = (Jaguar) leftMotor;
-        theFrontRightJaguar = (Jaguar) rightMotor;
-        theRearRightJaguar = (Jaguar) rightMotor;
     }
     
     TPARobotDriver(SpeedController frontLeftMotor, SpeedController rearLeftMotor,
                    SpeedController frontRightMotor, SpeedController rearRightMotor) {
         super(frontLeftMotor, rearLeftMotor, frontRightMotor, rearRightMotor);
-        theFrontLeftJaguar = (Jaguar) frontLeftMotor;
-        theRearLeftJaguar = (Jaguar) rearLeftMotor;
-        theFrontRightJaguar = (Jaguar) frontRightMotor;
-        theRearRightJaguar = (Jaguar) rearRightMotor;
+
+    }
+    TPARobotDriver(int frontLeftMotor, int rearLeftMotor,
+             int frontRightMotor, int rearRightMotor) {
+        super(frontLeftMotor, rearLeftMotor, frontRightMotor, rearRightMotor);
     }
     /*--------------------------------------------------------------------------*/
-    
+   
     /*
      * Author:  Gennaro De Luca
      * Date:    11/26/11 (Gennaro De Luca)
@@ -109,10 +89,12 @@ public class TPARobotDriver extends RobotDrive {
      */
     
     public void mecanumBrake(double aSpeedFrontLeft, double aSpeedRearLeft, double aSpeedFrontRight, double aSpeedRearRight){
-        theFrontLeftJaguar.set(-aSpeedFrontLeft);
-        theFrontRightJaguar.set(-aSpeedFrontRight);
-        theRearLeftJaguar.set(-aSpeedRearLeft);
-        theRearRightJaguar.set(-aSpeedRearRight);
+        System.out.println("Hello");
+        m_frontLeftMotor.set(-aSpeedFrontLeft);
+        m_frontRightMotor.set(-aSpeedFrontRight);
+        m_rearLeftMotor.set(-aSpeedRearLeft);
+        m_rearRightMotor.set(-aSpeedRearRight);
+        System.out.println("Hello Again");
     }
 
     /*--------------------------------------------------------------------------*/

@@ -14,12 +14,6 @@ import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Watchdog;
 import edu.wpi.first.wpilibj.camera.AxisCamera;
-import edu.wpi.first.wpilibj.camera.AxisCameraException;
-import edu.wpi.first.wpilibj.image.ColorImage;
-import edu.wpi.first.wpilibj.image.EllipseDescriptor;
-import edu.wpi.first.wpilibj.image.EllipseMatch;
-import edu.wpi.first.wpilibj.image.MonoImage;
-import edu.wpi.first.wpilibj.image.NIVisionException;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -29,8 +23,6 @@ import edu.wpi.first.wpilibj.image.NIVisionException;
  * directory.
  */
 public class TPARobot extends IterativeRobot {
-
-    ColorImage theColorImage;                                   // Image from camera
     AxisCamera theAxisCamera;                                   // The camera
     DriverStationLCD theDriverStationLCD;                       // Object representing the driver station   
     // Drive mode selection
@@ -45,19 +37,17 @@ public class TPARobot extends IterativeRobot {
     double theRearLeftOutput;                                   // The output sent to the rear left motor
     double theFrontRightOutput;                                 // The output sent to the front right motor
     double theRearRightOutput;                                  // The output sent to the rear right motor
-    Encoder theFrontLeftEncoder;                                // The encoder at the front left motor
-    Encoder theRearLeftEncoder;                                 // The encoder at the rear left motor
-    Encoder theFrontRightEncoder;                               // The encoder at the front right motor
-    Encoder theRearRightEncoder;                                // The encoder at the rear right motor
-    Joystick theRightStick;                                     // Right joystick
+                    Joystick theRightStick;                                     // Right joystick
     Joystick theLeftStick;                                      // Left joystick
     TPARobotDriver theRobotDrive;                               // Robot Drive System
     double theDriveDirection;                                   // Direction the robot will move
     double theDriveMagnitude;                                   // Speed the robot will move at
     double theDriveRotation;                                    // Value the robot will rotate
-    EllipseDescriptor theEllipseDescriptor;                     // Define the ball
+
+   
 
 
+   
     
     /*--------------------------------------------------------------------------*/
     /*
@@ -83,6 +73,17 @@ public class TPARobot extends IterativeRobot {
         if (DEBUG == true){
             System.out.println("theRobotDrive constructed successfully");
         }
+        
+/*
+        // Defines four E4P Motion Sensors at ports 1,2,3,4,5,6,7, and 8
+        theFrontLeftEncoder = new Encoder(1,2);
+        theRearLeftEncoder = new Encoder(3,4);
+        theFrontRightEncoder = new Encoder(5,6);
+        theRearRightEncoder = new Encoder(7,8);
+        if (DEBUG == true){
+            System.out.println("The Encoders constructed successfully");
+        }
+ */
 
         //Initialize the DriverStationLCD
         theDriverStationLCD = DriverStationLCD.getInstance();
@@ -94,20 +95,10 @@ public class TPARobot extends IterativeRobot {
         theAxisCamera = AxisCamera.getInstance(); 
         theAxisCamera.writeResolution(AxisCamera.ResolutionT.k320x240);        
         theAxisCamera.writeBrightness(50);
-        
         if (DEBUG) {
             System.out.println("AxisCamera initialized");
         }
-        
-        try{
-            theColorImage = theAxisCamera.getImage();
-        }
-        catch(NIVisionException b) {
-            System.out.println(b);
-        }
-        catch(AxisCameraException b) {
-            System.out.println(b);
-        }
+     
         // Initialize the Drive Mode to Uninitialized
         theDriveMode = UNINITIALIZED_DRIVE;
         
@@ -119,13 +110,7 @@ public class TPARobot extends IterativeRobot {
             System.out.println("The robot set to not move");
         }
         
-        // Define the ball
-        theEllipseDescriptor = new EllipseDescriptor(
-            /* minMajorRadius */ 3.75,
-            /* maxMajorRadius */ 4.25,
-            /* minMinorRadius */ 3.75,
-            /* maxMinorRadius */ 4.25);
-        
+       
         if (DEBUG == true){
         System.out.println("RobotInit() completed.\n");
         }
@@ -187,22 +172,24 @@ public class TPARobot extends IterativeRobot {
         if (DEBUG == true) {
             System.out.println("setMaxSpeed called");
         }
+        
         //Get the image from the Axis Camera
         DriverStationLCD.getInstance().updateLCD();
         if(DEBUG) {
             System.out.println("getCameraImage called");
         }
+
         // Drive the robot with FPS control
         driveRobot();
         if(DEBUG == true){
             System.out.println("driveRobot called");
         }
-        try {
-            System.out.println(findCircle());
-        }
-        catch(NIVisionException b) {
-            System.out.println(b);
-        }
+
+        // Brake the robot if no joysick input.
+        //brakeOnNeutral();
+        //if(DEBUG == true) {
+        //    System.out.println("brakeOnNeutral called");
+        //}
         
     }
     /*--------------------------------------------------------------------------*/
@@ -222,10 +209,18 @@ public class TPARobot extends IterativeRobot {
         theDriveDirection = theLeftStick.getDirectionDegrees(); // Set the direction to the value of the left stick
         theDriveMagnitude = theLeftStick.getMagnitude();    // Set the magnitude to the value of the left stick
         theDriveRotation = theRightStick.getDirectionDegrees(); // Set the rotation to the value of the right stick
-        theRobotDrive.mecanumDrive_Polar(theDriveDirection, theDriveMagnitude, theDriveRotation);
-    }
+        theRobotDrive.mecanumDrive_Polar(theDriveMagnitude, theDriveDirection, theDriveRotation);
+        if (DEBUG == true){
+        System.out.println("The drive rotation in degrees" + theDriveRotation);
+        System.out.println("The drive magnitude is" + theDriveMagnitude);
+        System.out.println("The drive direction is" + theDriveDirection);
+        }
+    }   
+
     /*--------------------------------------------------------------------------*/
     
+    
+  
     
     /*--------------------------------------------------------------------------*/
     /*
@@ -255,112 +250,19 @@ public class TPARobot extends IterativeRobot {
     }
     /*--------------------------------------------------------------------------*/
 
-        /*--------------------------------------------------------------------------*/ 
-    /*
-     * Author:  Marissa Beene
-     * Date:    10/30/11
-     * Purpose: To determine if there is no signal being sent to the robot from 
-     *          either the left or right joystick.
-     * Inputs:  Joystick aRightStick  - the right joystick
-     *          Joystick aLeftStick - the left joystick
-     * Outputs: Boolean - returns true if the drive train is not sent a signal
-     */
-    
-    public boolean isNeutral(Joystick aRightStick, Joystick aLeftStick){
-        if (DEBUG == true){
-            System.out.println("isNeutral Called");
-        }
-        if(aRightStick.getY() == 0 && aRightStick.getX() == 0 && aLeftStick.getY() == 0 && aLeftStick.getX() == 0){ //there is no input
-            return true;
-        }
-        else{
-            return false;
-        }
-    }
-    /*--------------------------------------------------------------------------*/
-
-    
-    /*--------------------------------------------------------------------------*/
-    /*
-     * Author:  Marissa Beene 
-     * Date:    1/14/2012
-     * Purpose: To brake the robot when no signal is being sent to it. Determines
-     *          the direction each motor is turning and then sends each motor the
-     *          stop value at the other direction.
-     * Inputs:  None
-     * Outputs: None
-     */    
-    public void brakeOnNeutral(){
-        if (isNeutral(theRightStick, theLeftStick)){ //no signal
-            
-            // Get the direction of the front left encoder and store the stop value vector to theFrontLeftOutput
-            if (!theFrontLeftEncoder.getStopped()){ // The wheel is moving
-                if(theFrontLeftEncoder.getDirection()){
-                    theFrontLeftOutput = STOP_VALUE;
-                }
-                else{
-                    theFrontLeftOutput = -STOP_VALUE;
-                }
-            }
-                
-            // Get the direction of the front left encoder and store the stop value vector to theFrontLeftOutput
-            if (!theRearLeftEncoder.getStopped()){ // The wheel is moving
-                if(theRearLeftEncoder.getDirection()){
-                    theRearLeftOutput = STOP_VALUE;
-                }
-                else{
-                    theRearLeftOutput = -STOP_VALUE;
-                }
-            }
-            
-            // Get the direction of the front left encoder and store the stop value vector to theFrontLeftOutput
-            if (!theFrontRightEncoder.getStopped()){ // The wheel is moving
-                if(theFrontRightEncoder.getDirection()){
-                    theFrontRightOutput = STOP_VALUE;
-                }
-                else{
-                    theFrontRightOutput = -STOP_VALUE;
-                }
-            }
-            
-            // Get the direction of the front left encoder and store the stop value vector to theFrontLeftOutput
-            if (!theRearRightEncoder.getStopped()){ // The wheel is moving
-                if(theRearRightEncoder.getDirection()){
-                    theRearRightOutput = STOP_VALUE;
-                }
-                else{
-                    theRearRightOutput = -STOP_VALUE;
-                }
-            }
-            theRobotDrive.mecanumBrake(theFrontLeftOutput, theRearLeftOutput, theFrontRightOutput, theRearRightOutput);
-        }
-    }
 
     /*--------------------------------------------------------------------------*/
-    
-    /*--------------------------------------------------------------------------*/
     /*
-     * Author:  Gennaro
-     * Date:    1/15/2012  
-     * Purpose: Test to see if the camera can see the ball
-     * Inputs:  None
-     * Outputs: Boolean - does the camera see the ball.
+     * Author:  
+     * Date:    
+     * Purpose: 
+     * Inputs:  
+     * Outputs: 
      */    
     
-    public boolean findCircle() throws NIVisionException {
-        
-        //int width = theColorImage.getWidth();
-        //int height = theColorImage.getHeight();
-        MonoImage theMonoImage = theColorImage.getLuminancePlane();
-        EllipseMatch[] theEllipseMatch = theMonoImage.detectEllipses(theEllipseDescriptor);
-        theMonoImage.free();
-        if(theEllipseMatch.length>0) {
-            return true;
-        }
-        else {
-            return false;
-        }
-    }
+    /*--------------------------------------------------------------------------*/
+
+
     
     /*--------------------------------------------------------------------------*/
     
@@ -374,6 +276,7 @@ public class TPARobot extends IterativeRobot {
      */    
     
     /*--------------------------------------------------------------------------*/
+
 
 
 }
