@@ -114,7 +114,6 @@ public class TPARobot extends IterativeRobot {
             System.out.println("The robot set to not move");
         }
         
-       
         if (DEBUG == true){
         System.out.println("RobotInit() completed.\n");
         }
@@ -188,13 +187,17 @@ public class TPARobot extends IterativeRobot {
         if(DEBUG == true){
             System.out.println("driveRobot called");
         }
+<<<<<<< HEAD
+/*        
+=======
 
+>>>>>>> 3fa4e65178b6f91c6237c5e182d15cbbd587b0e0
         // Brake the robot if no joysick input.
-        //brakeOnNeutral();
-        //if(DEBUG == true) {
-        //    System.out.println("brakeOnNeutral called");
-        //}
-        
+        brakeOnNeutral();
+        if(DEBUG == true) {
+            System.out.println("brakeOnNeutral called");
+        }
+*/        
     }
     /*--------------------------------------------------------------------------*/
     
@@ -212,8 +215,9 @@ public class TPARobot extends IterativeRobot {
     public void driveRobot() {
         theDriveDirection = theLeftStick.getDirectionDegrees(); // Set the direction to the value of the left stick
         theDriveMagnitude = theLeftStick.getMagnitude();    // Set the magnitude to the value of the left stick
-        theDriveRotation = theRightStick.getDirectionDegrees(); // Set the rotation to the value of the right stick
+        theDriveRotation = (theRightStick.getX()); // Set the rotation to the value of the right stick
         theRobotDrive.mecanumDrive_Polar(theDriveMagnitude, theDriveDirection, theDriveRotation);
+        
         if (DEBUG == true){
         System.out.println("The drive rotation in degrees" + theDriveRotation);
         System.out.println("The drive magnitude is" + theDriveMagnitude);
