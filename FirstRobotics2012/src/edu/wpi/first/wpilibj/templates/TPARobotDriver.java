@@ -15,51 +15,29 @@ import edu.wpi.first.wpilibj.SpeedController;
 public class TPARobotDriver extends RobotDrive {
     
     public static double kDefaultMinOutput=0.1; //Min value for the Speed Multiplier
-    public SpeedController theFrontLeftJaguar;           //Front left motor
-    public SpeedController theRearLeftJaguar;            //Rear left motor
-    public SpeedController theFrontRightJaguar;          //Front right motor
-    public SpeedController theRearRightJaguar;           //Rear right motor
+    
 
     //Constructors:
     TPARobotDriver(final int leftMotorChannel, final int rightMotorChannel){
         super(leftMotorChannel, rightMotorChannel);
-        /* Need to implement jaguar for other mechanum wheels
-        theFrontLeftJaguar = new Jaguar(leftMotorChannel);
-        theRearLeftJaguar = new Jaguar(leftMotorChannel);
-        theFrontRightJaguar = new Jaguar(rightMotorChannel);
-        theRearRightJaguar = new Jaguar(rightMotorChannel);*/
-    }
-    
-    TPARobotDriver(final int frontLeftMotor, final int rearLeftMotor,
-                   final int frontRightMotor, final int rearRightMotor) {
-        super(frontLeftMotor, rearLeftMotor, frontRightMotor, rearRightMotor);
-        // Implements the motor channels as jaguars for mecanum compatibility
-        theFrontLeftJaguar = new Jaguar(frontLeftMotor);
-        theRearLeftJaguar = new Jaguar(rearLeftMotor);
-        theFrontRightJaguar = new Jaguar(frontRightMotor);
-        theRearRightJaguar = new Jaguar(rearRightMotor);
+        
     }
     
     TPARobotDriver(SpeedController leftMotor, SpeedController rightMotor) {
         super(leftMotor, rightMotor);
-        //theFrontLeftJaguar = leftMotor;
-        //theRearLeftJaguar = leftMotor;
-        //theFrontRightJaguar = rightMotor;
-        //theRearRightJaguar = rightMotor;
-        //Need to implement Speed Controllers for brake
     }
     
     TPARobotDriver(SpeedController frontLeftMotor, SpeedController rearLeftMotor,
                    SpeedController frontRightMotor, SpeedController rearRightMotor) {
         super(frontLeftMotor, rearLeftMotor, frontRightMotor, rearRightMotor);
-        //theFrontLeftJaguar = frontLeftMotor;
-        //theRearLeftJaguar = rearLeftMotor;
-        //theFrontRightJaguar = frontRightMotor;
-        //theRearRightJaguar = rearRightMotor;
-        //Need to implement Speed Controllers for brake
+
+    }
+    TPARobotDriver(int frontLeftMotor, int rearLeftMotor,
+             int frontRightMotor, int rearRightMotor) {
+        super(frontLeftMotor, rearLeftMotor, frontRightMotor, rearRightMotor);
     }
     /*--------------------------------------------------------------------------*/
-    
+   
     /*
      * Author:  Gennaro De Luca
      * Date:    11/26/11 (Gennaro De Luca)
@@ -111,10 +89,12 @@ public class TPARobotDriver extends RobotDrive {
      */
     
     public void mecanumBrake(double aSpeedFrontLeft, double aSpeedRearLeft, double aSpeedFrontRight, double aSpeedRearRight){
-        theFrontLeftJaguar.set(-aSpeedFrontLeft);
-        theFrontRightJaguar.set(-aSpeedFrontRight);
-        theRearLeftJaguar.set(-aSpeedRearLeft);
-        theRearRightJaguar.set(-aSpeedRearRight);
+        System.out.println("Hello");
+        m_frontLeftMotor.set(-aSpeedFrontLeft);
+        m_frontRightMotor.set(-aSpeedFrontRight);
+        m_rearLeftMotor.set(-aSpeedRearLeft);
+        m_rearRightMotor.set(-aSpeedRearRight);
+        System.out.println("Hello Again");
     }
 
     /*--------------------------------------------------------------------------*/
