@@ -23,6 +23,8 @@ import edu.wpi.first.wpilibj.camera.AxisCamera;
  * directory.
  */
 public class TPARobot extends IterativeRobot {
+    static final boolean DEBUG = true;              // Debug Trigger
+    static final boolean CAMERA = false;            // Camera Trigger
     AxisCamera theAxisCamera;                       // The camera
     DriverStationLCD theDriverStationLCD;           // Object representing the driver station   
     // Drive mode selection
@@ -31,7 +33,6 @@ public class TPARobot extends IterativeRobot {
     static final int ARCADE_DRIVE = 1;              // Value when arcade mode is selected 
     static final int TANK_DRIVE = 2;                // Value when tank drive is selected
     public double theMaxSpeed;                      // Multiplier for speed, determined by Z-Axis on left stick
-    static final boolean DEBUG = true;              // Debug Trigger
     static final double STOP_VALUE = 0.1;           // Value sent to each motor when the robot is stopping
     Encoder theFrontLeftEncoder;                    // The front left E4P
     Encoder theRearLeftEncoder;                     // The rear left E4P
@@ -91,16 +92,23 @@ public class TPARobot extends IterativeRobot {
 
         //Initialize the DriverStationLCD
         theDriverStationLCD = DriverStationLCD.getInstance();
-        if (DEBUG) {
+        if (DEBUG == true) {
             System.out.println("DriverStationLCD initialized");
         }
         
         //Initialize the AxisCamera
-        theAxisCamera = AxisCamera.getInstance(); 
-        theAxisCamera.writeResolution(AxisCamera.ResolutionT.k320x240);        
-        theAxisCamera.writeBrightness(50);
-        if (DEBUG) {
-            System.out.println("AxisCamera initialized");
+        if (CAMERA == true){
+            theAxisCamera = AxisCamera.getInstance(); 
+            theAxisCamera.writeResolution(AxisCamera.ResolutionT.k320x240);        
+            theAxisCamera.writeBrightness(50);
+            if (DEBUG == true) {
+                System.out.println("AxisCamera initialized");
+            }
+        }
+        else {
+            if (DEBUG == true){
+                System.out.println("CAMERA set to false");
+            }
         }
      
         // Initialize the Drive Mode to Uninitialized
@@ -232,8 +240,8 @@ public class TPARobot extends IterativeRobot {
      * Author:  Gennaro De Luca
      * Date:    11/26/2011 (Gennaro De Luca)
      * Purpose: To determine the speed multiplier based on the "Z" wheel on 
-     *          the left joystick. If the "Z" wheel is up (negative), the multiplier remains at 1.
-     *          Otherwise, the multiplier is set to one-half.
+     *          the left joystick. Responds as a gradient. If the "Z" wheel on the
+     *          joystick gets a higher value, the robot will move faster.
      * Inputs:  None
      * Outputs: None
      */    
