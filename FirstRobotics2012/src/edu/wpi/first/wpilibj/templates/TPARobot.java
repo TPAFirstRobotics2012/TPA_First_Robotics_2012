@@ -173,6 +173,7 @@ public class TPARobot extends IterativeRobot {
         if(DEBUG == true){
             System.out.println("driveRobot called");
         }
+        brakeOnNeutral();
         
     }
     /*--------------------------------------------------------------------------*/
@@ -192,7 +193,7 @@ public class TPARobot extends IterativeRobot {
         theDriveDirection = theLeftStick.getDirectionDegrees(); // Set the direction to the value of the left stick
         theDriveMagnitude = theLeftStick.getMagnitude();    // Set the magnitude to the value of the left stick
         theDriveRotation = theRightStick.getDirectionDegrees(); // Set the rotation to the value of the right stick
-        theRobotDrive.mecanumDrive_Polar(theDriveDirection, theDriveMagnitude, theDriveRotation);
+        theRobotDrive.mecanumDrive_Polar(theDriveMagnitude, theDriveDirection, theDriveRotation);
     }
     /*--------------------------------------------------------------------------*/
     
