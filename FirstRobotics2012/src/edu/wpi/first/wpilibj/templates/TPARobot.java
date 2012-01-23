@@ -174,17 +174,24 @@ public class TPARobot extends IterativeRobot {
         if (DEBUG == true) {
             System.out.println("setMaxSpeed called");
         }
+        
         //Get the image from the Axis Camera
         DriverStationLCD.getInstance().updateLCD();
         if(DEBUG) {
             System.out.println("getCameraImage called");
         }
+        
         // Drive the robot with FPS control
         driveRobot();
         if(DEBUG == true){
             System.out.println("driveRobot called");
         }
-        brakeOnNeutral();
+        
+        // Brake the robot if no joysick input.
+        //brakeOnNeutral();
+        //if(DEBUG == true) {
+        //    System.out.println("brakeOnNeutral called");
+        //}
         
     }
     /*--------------------------------------------------------------------------*/
@@ -203,7 +210,7 @@ public class TPARobot extends IterativeRobot {
     public void driveRobot() {
         theDriveDirection = theLeftStick.getDirectionDegrees(); // Set the direction to the value of the left stick
         theDriveMagnitude = theLeftStick.getMagnitude();    // Set the magnitude to the value of the left stick
-        theDriveRotation = theRightStick.getDirectionDegrees(); // Set the rotation to the value of the right stick
+        theDriveRotation = ((180-theRightStick.getDirectionDegrees())/180); // Set the rotation to the value of the right stick
         theRobotDrive.mecanumDrive_Polar(theDriveMagnitude, theDriveDirection, theDriveRotation);
     }
     /*--------------------------------------------------------------------------*/
