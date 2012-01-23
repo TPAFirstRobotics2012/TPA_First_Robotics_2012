@@ -187,7 +187,7 @@ public class TPARobot extends IterativeRobot {
         if(DEBUG == true){
             System.out.println("driveRobot called");
         }
-/*        
+/*
         // Brake the robot if no joysick input.
         brakeOnNeutral();
         if(DEBUG == true) {
@@ -238,19 +238,8 @@ public class TPARobot extends IterativeRobot {
      */    
     public void setMaxSpeed(){
         
-        if (theLeftStick.getZ() <= 0) {    // Logitech Attack3 has z-polarity reversed; up is negative
-            theMaxSpeed = 1;               //set the multiplier to default value of 1
-            if (DEBUG == true){
-                System.out.println("theLeftStick.getZ called");
-            }
-        }
-        else if (theLeftStick.getZ() > 0) {
-            theMaxSpeed = 0.5;             //set the multiplier to half default, 0.5
-            if (DEBUG == true) {
-                System.out.println("theLeftStick.getZ called");
-            }
-        }
-        theRobotDrive.setMaxSpeed(theMaxSpeed); //tests the multiplier
+        theMaxSpeed = (theLeftStick.getZ() + 1.0)/2.0;
+        theRobotDrive.setMaxSpeed(theMaxSpeed); // sets the multiplier
     }
     /*--------------------------------------------------------------------------*/
 
