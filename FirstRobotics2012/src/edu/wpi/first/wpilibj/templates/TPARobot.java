@@ -187,11 +187,7 @@ public class TPARobot extends IterativeRobot {
         if(DEBUG == true){
             System.out.println("driveRobot called");
         }
-<<<<<<< HEAD
 /*        
-=======
-
->>>>>>> 3fa4e65178b6f91c6237c5e182d15cbbd587b0e0
         // Brake the robot if no joysick input.
         brakeOnNeutral();
         if(DEBUG == true) {
