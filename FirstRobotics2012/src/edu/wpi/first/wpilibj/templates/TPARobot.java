@@ -23,7 +23,6 @@ import edu.wpi.first.wpilibj.camera.AxisCamera;
  * directory.
  */
 public class TPARobot extends IterativeRobot {
-
     AxisCamera theAxisCamera;                                   // The camera
     DriverStationLCD theDriverStationLCD;                       // Object representing the driver station   
     // Drive mode selection
@@ -38,18 +37,17 @@ public class TPARobot extends IterativeRobot {
     double theRearLeftOutput;                                   // The output sent to the rear left motor
     double theFrontRightOutput;                                 // The output sent to the front right motor
     double theRearRightOutput;                                  // The output sent to the rear right motor
-    Encoder theFrontLeftEncoder;                                // The encoder at the front left motor
-    Encoder theRearLeftEncoder;                                 // The encoder at the rear left motor
-    Encoder theFrontRightEncoder;                               // The encoder at the front right motor
-    Encoder theRearRightEncoder;                                // The encoder at the rear right motor
-    Joystick theRightStick;                                     // Right joystick
+                    Joystick theRightStick;                                     // Right joystick
     Joystick theLeftStick;                                      // Left joystick
     TPARobotDriver theRobotDrive;                               // Robot Drive System
     double theDriveDirection;                                   // Direction the robot will move
     double theDriveMagnitude;                                   // Speed the robot will move at
     double theDriveRotation;                                    // Value the robot will rotate
+
    
 
+
+   
     
     /*--------------------------------------------------------------------------*/
     /*
@@ -100,7 +98,7 @@ public class TPARobot extends IterativeRobot {
         if (DEBUG) {
             System.out.println("AxisCamera initialized");
         }
-        
+     
         // Initialize the Drive Mode to Uninitialized
         theDriveMode = UNINITIALIZED_DRIVE;
         
@@ -180,13 +178,13 @@ public class TPARobot extends IterativeRobot {
         if(DEBUG) {
             System.out.println("getCameraImage called");
         }
-        
+
         // Drive the robot with FPS control
         driveRobot();
         if(DEBUG == true){
             System.out.println("driveRobot called");
         }
-        
+
         // Brake the robot if no joysick input.
         //brakeOnNeutral();
         //if(DEBUG == true) {
@@ -217,9 +215,12 @@ public class TPARobot extends IterativeRobot {
         System.out.println("The drive magnitude is" + theDriveMagnitude);
         System.out.println("The drive direction is" + theDriveDirection);
         }
-    }
+    }   
+
     /*--------------------------------------------------------------------------*/
     
+    
+  
     
     /*--------------------------------------------------------------------------*/
     /*
@@ -249,88 +250,6 @@ public class TPARobot extends IterativeRobot {
     }
     /*--------------------------------------------------------------------------*/
 
-        /*--------------------------------------------------------------------------*/ 
-    /*
-     * Author:  Marissa Beene
-     * Date:    10/30/11
-     * Purpose: To determine if there is no signal being sent to the robot from 
-     *          either the left or right joystick.
-     * Inputs:  Joystick aRightStick  - the right joystick
-     *          Joystick aLeftStick - the left joystick
-     * Outputs: Boolean - returns true if the drive train is not sent a signal
-     */
-    
-    public boolean isNeutral(Joystick aRightStick, Joystick aLeftStick){
-        if (DEBUG == true){
-            System.out.println("isNeutral Called");
-        }
-        if(aRightStick.getY() == 0 && aRightStick.getX() == 0 && aLeftStick.getY() == 0 && aLeftStick.getX() == 0){ //there is no input
-            return true;
-        }
-        else{
-            return false;
-        }
-    }
-    /*--------------------------------------------------------------------------*/
-
-    
-    /*--------------------------------------------------------------------------*/
-    /*
-     * Author:  Marissa Beene 
-     * Date:    1/14/2012
-     * Purpose: To brake the robot when no signal is being sent to it. Determines
-     *          the direction each motor is turning and then sends each motor the
-     *          stop value at the other direction.
-     * Inputs:  None
-     * Outputs: None
-     */    
-    public void brakeOnNeutral(){
-        if (isNeutral(theRightStick, theLeftStick)){ //no signal
-            
-            // Get the direction of the front left encoder and store the stop value vector to theFrontLeftOutput
-            if (!theFrontLeftEncoder.getStopped()){ // The wheel is moving
-                if(theFrontLeftEncoder.getDirection()){
-                    theFrontLeftOutput = STOP_VALUE;
-                }
-                else{
-                    theFrontLeftOutput = -STOP_VALUE;
-                }
-            }
-                
-            // Get the direction of the front left encoder and store the stop value vector to theFrontLeftOutput
-            if (!theRearLeftEncoder.getStopped()){ // The wheel is moving
-                if(theRearLeftEncoder.getDirection()){
-                    theRearLeftOutput = STOP_VALUE;
-                }
-                else{
-                    theRearLeftOutput = -STOP_VALUE;
-                }
-            }
-            
-            // Get the direction of the front left encoder and store the stop value vector to theFrontLeftOutput
-            if (!theFrontRightEncoder.getStopped()){ // The wheel is moving
-                if(theFrontRightEncoder.getDirection()){
-                    theFrontRightOutput = STOP_VALUE;
-                }
-                else{
-                    theFrontRightOutput = -STOP_VALUE;
-                }
-            }
-            
-            // Get the direction of the front left encoder and store the stop value vector to theFrontLeftOutput
-            if (!theRearRightEncoder.getStopped()){ // The wheel is moving
-                if(theRearRightEncoder.getDirection()){
-                    theRearRightOutput = STOP_VALUE;
-                }
-                else{
-                    theRearRightOutput = -STOP_VALUE;
-                }
-            }
-            theRobotDrive.mecanumBrake(theFrontLeftOutput, theRearLeftOutput, theFrontRightOutput, theRearRightOutput);
-        }
-    }
-
-    /*--------------------------------------------------------------------------*/
 
     /*--------------------------------------------------------------------------*/
     /*
@@ -342,6 +261,22 @@ public class TPARobot extends IterativeRobot {
      */    
     
     /*--------------------------------------------------------------------------*/
+
+
+    
+    /*--------------------------------------------------------------------------*/
+    
+    /*--------------------------------------------------------------------------*/
+    /*
+     * Author:  
+     * Date:    
+     * Purpose: 
+     * Inputs:  
+     * Outputs: 
+     */    
+    
+    /*--------------------------------------------------------------------------*/
+
 
 
 }
