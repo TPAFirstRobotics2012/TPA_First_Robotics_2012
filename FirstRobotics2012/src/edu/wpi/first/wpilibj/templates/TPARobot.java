@@ -23,26 +23,30 @@ import edu.wpi.first.wpilibj.camera.AxisCamera;
  * directory.
  */
 public class TPARobot extends IterativeRobot {
-    AxisCamera theAxisCamera;                                   // The camera
-    DriverStationLCD theDriverStationLCD;                       // Object representing the driver station   
+    AxisCamera theAxisCamera;                       // The camera
+    DriverStationLCD theDriverStationLCD;           // Object representing the driver station   
     // Drive mode selection
-    int theDriveMode;                                           // The actual drive mode that is currently selected.
-    static final int UNINITIALIZED_DRIVE = 0;                   // Value when no drive mode is selected
-    static final int ARCADE_DRIVE = 1;                          // Value when arcade mode is selected 
-    static final int TANK_DRIVE = 2;                            // Value when tank drive is selected
-    public double theMaxSpeed;                                  // Multiplier for speed, determined by Z-Axis on left stick
-    static final boolean DEBUG = true;                          // Debug Trigger
-    static final double STOP_VALUE = 0.1;                       // Value sent to each motor when the robot is stopping
-    double theFrontLeftOutput;                                  // The output sent to the front left motor
-    double theRearLeftOutput;                                   // The output sent to the rear left motor
-    double theFrontRightOutput;                                 // The output sent to the front right motor
-    double theRearRightOutput;                                  // The output sent to the rear right motor
-                    Joystick theRightStick;                                     // Right joystick
-    Joystick theLeftStick;                                      // Left joystick
-    TPARobotDriver theRobotDrive;                               // Robot Drive System
-    double theDriveDirection;                                   // Direction the robot will move
-    double theDriveMagnitude;                                   // Speed the robot will move at
-    double theDriveRotation;                                    // Value the robot will rotate
+    int theDriveMode;                               // The actual drive mode that is currently selected.
+    static final int UNINITIALIZED_DRIVE = 0;       // Value when no drive mode is selected
+    static final int ARCADE_DRIVE = 1;              // Value when arcade mode is selected 
+    static final int TANK_DRIVE = 2;                // Value when tank drive is selected
+    public double theMaxSpeed;                      // Multiplier for speed, determined by Z-Axis on left stick
+    static final boolean DEBUG = true;              // Debug Trigger
+    static final double STOP_VALUE = 0.1;           // Value sent to each motor when the robot is stopping
+    Encoder theFrontLeftEncoder;                    // The front left E4P
+    Encoder theRearLeftEncoder;                     // The rear left E4P
+    Encoder theFrontRightEncoder;                   // The front right E4P
+    Encoder theRearRightEncoder;                    // The rear right E4P
+    double theFrontLeftOutput;                      // The output sent to the front left motor
+    double theRearLeftOutput;                       // The output sent to the rear left motor
+    double theFrontRightOutput;                     // The output sent to the front right motor
+    double theRearRightOutput;                      // The output sent to the rear right motor
+    Joystick theRightStick;                         // Right joystick
+    Joystick theLeftStick;                          // Left joystick
+    TPARobotDriver theRobotDrive;                   // Robot Drive System
+    double theDriveDirection;                       // Direction the robot will move
+    double theDriveMagnitude;                       // Speed the robot will move at
+    double theDriveRotation;                        // Value the robot will rotate
 
    
 
@@ -110,7 +114,6 @@ public class TPARobot extends IterativeRobot {
             System.out.println("The robot set to not move");
         }
         
-       
         if (DEBUG == true){
         System.out.println("RobotInit() completed.\n");
         }
@@ -184,13 +187,13 @@ public class TPARobot extends IterativeRobot {
         if(DEBUG == true){
             System.out.println("driveRobot called");
         }
-
+/*
         // Brake the robot if no joysick input.
-        //brakeOnNeutral();
-        //if(DEBUG == true) {
-        //    System.out.println("brakeOnNeutral called");
-        //}
-        
+        brakeOnNeutral();
+        if(DEBUG == true) {
+            System.out.println("brakeOnNeutral called");
+        }
+*/        
     }
     /*--------------------------------------------------------------------------*/
     
@@ -208,8 +211,9 @@ public class TPARobot extends IterativeRobot {
     public void driveRobot() {
         theDriveDirection = theLeftStick.getDirectionDegrees(); // Set the direction to the value of the left stick
         theDriveMagnitude = theLeftStick.getMagnitude();    // Set the magnitude to the value of the left stick
-        theDriveRotation = theRightStick.getDirectionDegrees(); // Set the rotation to the value of the right stick
+        theDriveRotation = (theRightStick.getX()); // Set the rotation to the value of the right stick
         theRobotDrive.mecanumDrive_Polar(theDriveMagnitude, theDriveDirection, theDriveRotation);
+        
         if (DEBUG == true){
         System.out.println("The drive rotation in degrees" + theDriveRotation);
         System.out.println("The drive magnitude is" + theDriveMagnitude);
@@ -234,19 +238,8 @@ public class TPARobot extends IterativeRobot {
      */    
     public void setMaxSpeed(){
         
-        if (theLeftStick.getZ() <= 0) {    // Logitech Attack3 has z-polarity reversed; up is negative
-            theMaxSpeed = 1;               //set the multiplier to default value of 1
-            if (DEBUG == true){
-                System.out.println("theLeftStick.getZ called");
-            }
-        }
-        else if (theLeftStick.getZ() > 0) {
-            theMaxSpeed = 0.5;             //set the multiplier to half default, 0.5
-            if (DEBUG == true) {
-                System.out.println("theLeftStick.getZ called");
-            }
-        }
-        theRobotDrive.setMaxSpeed(theMaxSpeed); //tests the multiplier
+        theMaxSpeed = (theLeftStick.getZ() + 1.0)/2.0;
+        theRobotDrive.setMaxSpeed(theMaxSpeed); // sets the multiplier
     }
     /*--------------------------------------------------------------------------*/
 
