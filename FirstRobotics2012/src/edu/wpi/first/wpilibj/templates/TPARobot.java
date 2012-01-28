@@ -14,6 +14,7 @@ import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Watchdog;
 import edu.wpi.first.wpilibj.camera.AxisCamera;
+import edu.wpi.first.wpilibj.Compressor;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -27,11 +28,6 @@ public class TPARobot extends IterativeRobot {
     static final boolean CAMERA = false;            // Camera Trigger
     AxisCamera theAxisCamera;                       // The camera
     DriverStationLCD theDriverStationLCD;           // Object representing the driver station   
-    // Drive mode selection
-    int theDriveMode;                               // The actual drive mode that is currently selected.
-    static final int UNINITIALIZED_DRIVE = 0;       // Value when no drive mode is selected
-    static final int ARCADE_DRIVE = 1;              // Value when arcade mode is selected 
-    static final int TANK_DRIVE = 2;                // Value when tank drive is selected
     public double theMaxSpeed;                      // Multiplier for speed, determined by Z-Axis on left stick
     static final double STOP_VALUE = 0.1;           // Value sent to each motor when the robot is stopping
     Encoder theFrontLeftEncoder;                    // The front left E4P
@@ -48,6 +44,7 @@ public class TPARobot extends IterativeRobot {
     double theDriveDirection;                       // Direction the robot will move
     double theDriveMagnitude;                       // Speed the robot will move at
     double theDriveRotation;                        // Value the robot will rotate
+    Compressor theCompressor;                       // The air compressor
 
    
 
@@ -96,6 +93,13 @@ public class TPARobot extends IterativeRobot {
             System.out.println("DriverStationLCD initialized");
         }
         
+        //Initialize the compressor in ports 6 and 6
+        theCompressor = new Compressor (6,6);
+        if (DEBUG == true){
+            System.out.println("The Compressor constructed successfully");
+        }
+        theCompressor.start(); //Instantly turn the compressor on
+        
         //Initialize the AxisCamera
         if (CAMERA == true){
             theAxisCamera = AxisCamera.getInstance(); 
@@ -110,9 +114,6 @@ public class TPARobot extends IterativeRobot {
                 System.out.println("CAMERA set to false");
             }
         }
-     
-        // Initialize the Drive Mode to Uninitialized
-        theDriveMode = UNINITIALIZED_DRIVE;
         
         // Default the robot to not move
         theDriveDirection = 0;
@@ -247,7 +248,7 @@ public class TPARobot extends IterativeRobot {
      */    
     public void setMaxSpeed(){
         
-        theMaxSpeed = (theLeftStick.getZ() + 1.0)/2.0;
+        theMaxSpeed = (theLeftStick.getZ() - 1.0)/-2.0;
         theRobotDrive.setMaxSpeed(theMaxSpeed); // sets the multiplier
     }
     /*--------------------------------------------------------------------------*/
