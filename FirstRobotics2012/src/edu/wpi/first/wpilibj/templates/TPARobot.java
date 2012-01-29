@@ -271,7 +271,7 @@ public class TPARobot extends IterativeRobot {
      */    
     public void setMaxSpeed(){
         
-        theMaxSpeed = (theLeftStick.getZ() + 1.0)/2.0;
+        theMaxSpeed = (theLeftStick.getZ() - 1.0)/(-2.0); // z-axis is inverted
         theRobotDrive.setMaxSpeed(theMaxSpeed); // sets the multiplier
     }
     /*--------------------------------------------------------------------------*/
@@ -299,13 +299,13 @@ public void displaySpeed(){
     afrs += tfr;
     arrs += trr;
     numberCollected++;
-    
+        
     if(numberCollected == 100){
         numberCollected =0;
         String print1 = "FLS: " + afls/100;
         String print2 = "RLS: " + arls/100;
         String print3 = "FRS: " + afrs/100;
-        String print4 = "RRS: " + arrs/100;
+        String print4 = "RRS: " + arrs/100; 
     
         theDriverStationLCD.println(DriverStationLCD.Line.kMain6, 1 , print1 );
         theDriverStationLCD.println(DriverStationLCD.Line.kUser2, 1 , print2 );
@@ -317,7 +317,7 @@ public void displaySpeed(){
         arls=0;
         afrs=0;
         arrs=0;
-    }
+    } 
    
     
     
@@ -348,7 +348,6 @@ public void displaySpeed(){
     
     static boolean buttonPressable = true;
     static boolean flip = false;// if the direction and rotation are already flipped.
-    
     public boolean change(Joystick aStick){
         if (buttonPressable  && aStick.getRawButton(1)){
             flip = (flip) ? false : true;// if flip is false, make it true and vice versa.
