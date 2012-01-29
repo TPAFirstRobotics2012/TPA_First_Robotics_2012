@@ -22,6 +22,8 @@ import edu.wpi.first.wpilibj.Compressor;
 public class TPARobot extends IterativeRobot {
     static final boolean DEBUG = true;              // Debug Trigger
     static final boolean CAMERA = false;            // Camera Trigger
+    static boolean buttonPressable = true;          // Flag for backwards driving 
+    static boolean flip = false;                    // If the direction and rotation are already flipped.
     AxisCamera theAxisCamera;                       // The camera
     DriverStationLCD theDriverStationLCD;           // Object representing the driver station   
     public double theMaxSpeed;                      // Multiplier for speed, determined by Z-Axis on left stick
@@ -256,7 +258,6 @@ public class TPARobot extends IterativeRobot {
     }
 
     /*--------------------------------------------------------------------------*/
-
                     
     
     /*--------------------------------------------------------------------------*/
@@ -287,56 +288,42 @@ public class TPARobot extends IterativeRobot {
      */    
     
     /*--------------------------------------------------------------------------*/
-public void displaySpeed(){
-    
-    double tfl = theFrontLeftEncoder.getRate();
-    double trl = theRearLeftEncoder.getRate();
-    double tfr = theFrontRightEncoder.getRate();
-    double trr = theRearRightEncoder.getRate();
-    
-    afls += tfl;
-    arls += trl;
-    afrs += tfr;
-    arrs += trr;
-    numberCollected++;
-        
-    if(numberCollected == 100){
-        numberCollected =0;
-        String print1 = "FLS: " + afls/100;
-        String print2 = "RLS: " + arls/100;
-        String print3 = "FRS: " + afrs/100;
-        String print4 = "RRS: " + arrs/100; 
-    
-        theDriverStationLCD.println(DriverStationLCD.Line.kMain6, 1 , print1 );
-        theDriverStationLCD.println(DriverStationLCD.Line.kUser2, 1 , print2 );
-        theDriverStationLCD.println(DriverStationLCD.Line.kUser3, 1 , print3 );
-        theDriverStationLCD.println(DriverStationLCD.Line.kUser4, 1 , print4 );
-        theDriverStationLCD.updateLCD();
-        
-        afls=0;
-        arls=0;
-        afrs=0;
-        arrs=0;
-    } 
-   
-    
-    
-}
-    
-    /*--------------------------------------------------------------------------*/
-    
-    /*--------------------------------------------------------------------------*/
-    /*
-     * Author:  Sumbhav Sethia
-     * Date:    
-     * Purpose: 
-     * Inputs:  
-     * Outputs: 
-     */    
-    
+    public void displaySpeed(){
+
+        double tfl = theFrontLeftEncoder.getRate();
+        double trl = theRearLeftEncoder.getRate();
+        double tfr = theFrontRightEncoder.getRate();
+        double trr = theRearRightEncoder.getRate();
+
+        afls += tfl;
+        arls += trl;
+        afrs += tfr;
+        arrs += trr;
+        numberCollected++;
+
+        if(numberCollected == 100){
+            numberCollected =0;
+            String print1 = "FLS: " + afls/100;
+            String print2 = "RLS: " + arls/100;
+            String print3 = "FRS: " + afrs/100;
+            String print4 = "RRS: " + arrs/100; 
+
+            theDriverStationLCD.println(DriverStationLCD.Line.kMain6, 1 , print1 );
+            theDriverStationLCD.println(DriverStationLCD.Line.kUser2, 1 , print2 );
+            theDriverStationLCD.println(DriverStationLCD.Line.kUser3, 1 , print3 );
+            theDriverStationLCD.println(DriverStationLCD.Line.kUser4, 1 , print4 );
+            theDriverStationLCD.updateLCD();
+
+            afls=0;
+            arls=0;
+            afrs=0;
+            arrs=0;
+        } 
+    }
     /*--------------------------------------------------------------------------*/
 
- /*--------------------------------------------------------------------------*/
+
+    /*--------------------------------------------------------------------------*/
     /*
      * Author: Andrew Matsumoto
      * Date: 1/26/12   
@@ -346,8 +333,6 @@ public void displaySpeed(){
      * Outputs: the direction and the rotation opposite of the original.
      */  
     
-    static boolean buttonPressable = true;
-    static boolean flip = false;// if the direction and rotation are already flipped.
     public boolean change(Joystick aStick){
         if (buttonPressable  && aStick.getRawButton(1)){
             flip = (flip) ? false : true;// if flip is false, make it true and vice versa.
@@ -360,5 +345,15 @@ public void displaySpeed(){
     }
     /*--------------------------------------------------------------------------*/
 
-
+    
+    /*--------------------------------------------------------------------------*/
+    /*
+     * Author:  
+     * Date:    
+     * Purpose: 
+     * Inputs:  
+     * Outputs: 
+     */    
+    
+    /*--------------------------------------------------------------------------*/
 }
