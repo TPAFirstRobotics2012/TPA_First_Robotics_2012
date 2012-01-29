@@ -30,6 +30,8 @@ public class TPARobot extends IterativeRobot {
     static final int TANK_DRIVE = 2;                // Value when tank drive is selected
     public double theMaxSpeed;                      // Multiplier for speed, determined by Z-Axis on left stick
     static final double STOP_VALUE = 0.1;           // Value sent to each motor when the robot is stopping
+   Solenoid theWedgeUp;                             //This Solenoid moves the wedge up and holds the ball in place
+    Solenoid theWedgeDown;                           //This Solenoid moves the wedge down and lets balls fall into the shooter
     Encoder theFrontLeftEncoder;                    // The front left E4P
     Encoder theRearLeftEncoder;                     // The rear left E4P
     Encoder theFrontRightEncoder;                   // The front right E4P
@@ -78,7 +80,9 @@ public class TPARobot extends IterativeRobot {
         if (DEBUG == true){
             System.out.println("theRobotDrive constructed successfully");
         }
-        
+        //Define Solenoids used to move ball into shooter
+        theWedgeUp = new Solenoid(1);
+        theWedgeDown = new Solenoid(2);
 
         //Defines four E4P Motion Sensors at ports 1,2,3,4,5,6,7, and 8
         theFrontLeftEncoder = new Encoder(2,1);
@@ -201,6 +205,8 @@ public class TPARobot extends IterativeRobot {
         }
         displaySpeed();
         System.out.println("displaySPeed called");
+        
+        DropBallIntoShooter(theRightStick);
 /*
         // Brake the robot if no joysick input.
         brakeOnNeutral();
@@ -308,11 +314,20 @@ public void displaySpeed(){
     /*--------------------------------------------------------------------------*/
     /*
      * Author:  Sumbhav Sethia
-     * Date:    
-     * Purpose: 
-     * Inputs:  
-     * Outputs: 
-     */    
+     * Date:    1/29/2012
+     * Purpose: To drop one and only one ball into the shooter mechanism
+     * Inputs:  Joystick aStick
+     * Outputs: None
+     */
+        public void DropBallIntoShooter(Joystick aStick) {
+            if(aStick.getRawButton(3)) {
+               theWedgeUp.set(false);
+               theWedgeDown.set(true);
+               Timer.delay(2.0);
+               theWedgeUp.set(true);
+               theWedgeDown.set(false);
+            }
+        }
     
     /*--------------------------------------------------------------------------*/
 
