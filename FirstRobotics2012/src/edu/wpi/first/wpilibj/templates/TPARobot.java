@@ -189,14 +189,27 @@ public class TPARobot extends IterativeRobot {
      * Outputs: None
      */    
     public void driveRobot() {
+        
         theDriveDirection = theLeftStick.getDirectionDegrees(); // Set the direction to the value of the left stick
         theDriveMagnitude = theLeftStick.getMagnitude();    // Set the magnitude to the value of the left stick
         theDriveRotation = theRightStick.getDirectionDegrees();// Set the rotation to the value of the right stick
-        theRobotDrive.mecanumDrive_Polar(theDriveMagnitude, theDriveDirection, theDriveRotation);
+        if (!change(theLeftStick)){
+            theRobotDrive.mecanumDrive_Polar(theDriveMagnitude, theDriveDirection, theDriveRotation);
+            }
+        else if (change(theLeftStick)){
+            if (theDriveDirection > 0){
+                theDriveDirection = theDriveDirection - 180;
+            }
+            else{
+                theDriveDirection = 180 + theDriveDirection;
+            }
+            theDriveRotation = -theDriveRotation;
+            theRobotDrive.mecanumDrive_Polar(theDriveMagnitude, theDriveDirection, theDriveRotation);
+        }
         if (DEBUG == true){
-        System.out.println("The drive rotation is" + theDriveRotation);
-        System.out.println("The drive magnitude is" + theDriveMagnitude);
-        System.out.println("The drive direction in degrees is" + theDriveDirection);
+            System.out.println("The drive rotation is" + theDriveRotation);
+            System.out.println("The drive magnitude is" + theDriveMagnitude);
+            System.out.println("The drive direction in degrees is" + theDriveDirection);
         }
     }
     /*--------------------------------------------------------------------------*/
@@ -317,38 +330,24 @@ public class TPARobot extends IterativeRobot {
     /*
      * Author: Andrew Matsumoto
      * Date: 1/26/12   
-     * Purpose: Reverse the direction and rotation of the robot.
-     * Inputs:  direction for the first subroutine, rotation for the second.
+     * Purpose: decides whether the button to make the direction and rotation 
+     * opposite of what they are originally is pressed 
+     * Inputs:  
      * Outputs: the direction and the rotation opposite of the original.
      */  
     
     static boolean buttonPressable = true;
+    static boolean flip = false;// if the direction and rotation are already flipped.
     
-    public double processDirection(Joystick aStick, double theDriveDirection){
-        if (buttonPressable  && aStick.getRawButton(2)){
-            if (theDriveDirection >= 0){
-                theDriveDirection = -(180 - theDriveDirection);
-            }
-            else {
-                theDriveDirection = (180 + theDriveDirection);
-            }
+    public boolean change(Joystick aStick){
+        if (buttonPressable  && aStick.getRawButton(1)){
+            flip = (flip) ? false : true;// if flip is false, make it true and vice versa.
             buttonPressable = false;
         }
-        if (!aStick.getRawButton(2)){
+        if (!aStick.getRawButton(1)){
           buttonPressable = true;  
         }
-            return theDriveDirection;
-    }
-    
-    public double processRotation(Joystick aStick, double theDriveRotation){
-        if (buttonPressable && aStick.getRawButton(2)){
-            theDriveRotation = -theDriveRotation;
-            buttonPressable = false;
-        }
-        if (!aStick.getRawButton(2)){
-            buttonPressable = true;
-        }
-        return theDriveRotation;
+        return flip;
     }
     /*--------------------------------------------------------------------------*/
 
