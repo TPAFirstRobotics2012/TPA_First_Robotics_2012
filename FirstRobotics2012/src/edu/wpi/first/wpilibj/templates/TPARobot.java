@@ -8,11 +8,7 @@
 package edu.wpi.first.wpilibj.templates;
 
 
-import edu.wpi.first.wpilibj.DriverStationLCD;
-import edu.wpi.first.wpilibj.IterativeRobot;
-import edu.wpi.first.wpilibj.Joystick;
-import edu.wpi.first.wpilibj.Encoder;
-import edu.wpi.first.wpilibj.Watchdog;
+import edu.wpi.first.wpilibj.*;
 import edu.wpi.first.wpilibj.camera.AxisCamera;
 
 /**
@@ -44,12 +40,16 @@ public class TPARobot extends IterativeRobot {
     double theRearRightOutput;                      // The output sent to the rear right motor
     Joystick theRightStick;                         // Right joystick
     Joystick theLeftStick;                          // Left joystick
-    TPARobotDriver theRobotDrive;                   // Robot Drive System
+    RobotDrive theRobotDrive;                   // Robot Drive System
     double theDriveDirection;                       // Direction the robot will move
     double theDriveMagnitude;                       // Speed the robot will move at
     double theDriveRotation;                        // Value the robot will rotate
 
-   
+    double afls =0;
+    double afrs =0;
+    double arls =0;
+    double arrs =0;
+    int numberCollected=0;
 
 
    
@@ -79,16 +79,20 @@ public class TPARobot extends IterativeRobot {
             System.out.println("theRobotDrive constructed successfully");
         }
         
-/*
-        // Defines four E4P Motion Sensors at ports 1,2,3,4,5,6,7, and 8
-        theFrontLeftEncoder = new Encoder(1,2);
-        theRearLeftEncoder = new Encoder(3,4);
-        theFrontRightEncoder = new Encoder(5,6);
-        theRearRightEncoder = new Encoder(7,8);
+
+        //Defines four E4P Motion Sensors at ports 1,2,3,4,5,6,7, and 8
+        theFrontLeftEncoder = new Encoder(2,1);
+        theFrontLeftEncoder.start();
+        theRearLeftEncoder = new Encoder(6,5);
+        theRearLeftEncoder.start();
+        theFrontRightEncoder = new Encoder(4,3);
+        theFrontRightEncoder.start();
+        theRearRightEncoder = new Encoder(8,7);
+        theRearRightEncoder.start();
         if (DEBUG == true){
             System.out.println("The Encoders constructed successfully");
         }
- */
+
 
         //Initialize the DriverStationLCD
         theDriverStationLCD = DriverStationLCD.getInstance();
@@ -195,6 +199,8 @@ public class TPARobot extends IterativeRobot {
         if(DEBUG == true){
             System.out.println("driveRobot called");
         }
+        displaySpeed();
+        System.out.println("displaySPeed called");
 /*
         // Brake the robot if no joysick input.
         brakeOnNeutral();
@@ -220,9 +226,9 @@ public class TPARobot extends IterativeRobot {
         theDriveDirection = theLeftStick.getDirectionDegrees(); // Set the direction to the value of the left stick
         theDriveMagnitude = theLeftStick.getMagnitude();    // Set the magnitude to the value of the left stick
         theDriveRotation = (theRightStick.getX()); // Set the rotation to the value of the right stick
-        theRobotDrive.mecanumDrive_Polar(theDriveMagnitude, theDriveDirection, theDriveRotation);
-        
-        if (DEBUG == true){
+        theRobotDrive.mecanumDrive_Polar(theDriveMagnitude, theDriveDirection, theDriveRotation );
+        //theRobotDrive.mecanumDrive_Polar(.3, 180, 0);
+        if (DEBUG == true){ 
         System.out.println("The drive rotation in degrees" + theDriveRotation);
         System.out.println("The drive magnitude is" + theDriveMagnitude);
         System.out.println("The drive direction is" + theDriveDirection);
@@ -230,13 +236,12 @@ public class TPARobot extends IterativeRobot {
     }   
 
     /*--------------------------------------------------------------------------*/
-    
-    
-  
+
+                    
     
     /*--------------------------------------------------------------------------*/
     /*
-     * Author:  Gennaro De Luca
+     * Author:  Gennaro De Luca, Marissa Beene
      * Date:    11/26/2011 (Gennaro De Luca)
      * Purpose: To determine the speed multiplier based on the "Z" wheel on 
      *          the left joystick. Responds as a gradient. If the "Z" wheel on the
@@ -247,7 +252,7 @@ public class TPARobot extends IterativeRobot {
     public void setMaxSpeed(){
         
         theMaxSpeed = (theLeftStick.getZ() + 1.0)/2.0;
-        theRobotDrive.setMaxSpeed(theMaxSpeed); // sets the multiplier
+       // theRobotDrive.setMaxSpeed(theMaxSpeed); // sets the multiplier
     }
     /*--------------------------------------------------------------------------*/
 
@@ -262,12 +267,56 @@ public class TPARobot extends IterativeRobot {
      */    
     
     /*--------------------------------------------------------------------------*/
-
-
+public void displaySpeed(){
+    
+    double tfl = theFrontLeftEncoder.getRate();
+    double trl = theRearLeftEncoder.getRate();
+    double tfr = theFrontRightEncoder.getRate();
+    double trr = theRearRightEncoder.getRate();
+    
+    afls += tfl;
+    arls += trl;
+    afrs += tfr;
+    arrs += trr;
+    numberCollected++;
+    
+    if(numberCollected == 100){
+        numberCollected =0;
+        String print1 = "FLS: " + afls/100;
+        String print2 = "RLS: " + arls/100;
+        String print3 = "FRS: " + afrs/100;
+        String print4 = "RRS: " + arrs/100;
+    
+        theDriverStationLCD.println(DriverStationLCD.Line.kMain6, 1 , print1 );
+        theDriverStationLCD.println(DriverStationLCD.Line.kUser2, 1 , print2 );
+        theDriverStationLCD.println(DriverStationLCD.Line.kUser3, 1 , print3 );
+        theDriverStationLCD.println(DriverStationLCD.Line.kUser4, 1 , print4 );
+        theDriverStationLCD.updateLCD();
+        
+        afls=0;
+        arls=0;
+        afrs=0;
+        arrs=0;
+    }
+   
+    
+    
+}
     
     /*--------------------------------------------------------------------------*/
     
     /*--------------------------------------------------------------------------*/
+    /*
+     * Author:  Sumbhav Sethia
+     * Date:    
+     * Purpose: 
+     * Inputs:  
+     * Outputs: 
+     */    
+    
+    /*--------------------------------------------------------------------------*/
+
+ /*--------------------------------------------------------------------------*/
     /*
      * Author:  
      * Date:    
@@ -277,7 +326,6 @@ public class TPARobot extends IterativeRobot {
      */    
     
     /*--------------------------------------------------------------------------*/
-
 
 
 }
