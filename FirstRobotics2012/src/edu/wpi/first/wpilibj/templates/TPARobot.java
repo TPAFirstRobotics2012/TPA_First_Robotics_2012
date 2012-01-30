@@ -70,9 +70,10 @@ public class TPARobot extends IterativeRobot {
      */
     public void robotInit() {
                
-        // Define joysticks being used at USB port #1 and USB port #2 on the Drivers Station
+        // Define joysticks being used at USB port #1, USB port #2, and USB port #3 on the Drivers Station
 	theRightStick = new Joystick(1);
 	theLeftStick = new Joystick(2);
+        theShootingStick = new Joystick(3);
         if (DEBUG == true){
            System.out.println("The Joysticks constructed successfully"); 
         }
@@ -202,7 +203,7 @@ public class TPARobot extends IterativeRobot {
         
         //Get the image from the Axis Camera
         DriverStationLCD.getInstance().updateLCD();
-        if(DEBUG) {
+        if(DEBUG == true) {
             System.out.println("getCameraImage called");
         }
 
@@ -212,8 +213,17 @@ public class TPARobot extends IterativeRobot {
             System.out.println("driveRobot called");
         }
         
+        // Run the conveyor belt
+        runConveyor(theShootingStick, CONVEYOR_SPEED);
+        if(DEBUG == true){
+            System.out.println("driveRobot called");
+        }
+        
+        // Display the speed of each wheel
         displaySpeed();
-        System.out.println("displaySpeed called");
+        if (DEBUG == true){
+            System.out.println("displaySpeed called");
+        }
 /*
         // Brake the robot if no joysick input.
         brakeOnNeutral();
