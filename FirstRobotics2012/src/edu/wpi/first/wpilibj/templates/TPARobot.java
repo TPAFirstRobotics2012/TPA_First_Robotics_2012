@@ -21,6 +21,8 @@ import edu.wpi.first.wpilibj.camera.AxisCamera;
 public class TPARobot extends IterativeRobot {
     static final boolean DEBUG = true;              // Debug Trigger
     static final boolean CAMERA = false;            // Camera Trigger
+    static boolean buttonPressable = true;          // Flag for backwards driving 
+    static boolean flip = false;                    // If the direction and rotation are already flipped.
     AxisCamera theAxisCamera;                       // The camera
     DriverStationLCD theDriverStationLCD;           // Object representing the driver station   
     // Drive mode selection
@@ -254,7 +256,6 @@ public class TPARobot extends IterativeRobot {
     }
 
     /*--------------------------------------------------------------------------*/
-
                     
     
     /*--------------------------------------------------------------------------*/
@@ -322,17 +323,7 @@ public void displaySpeed(){
 }
     
     /*--------------------------------------------------------------------------*/
-    
-    /*--------------------------------------------------------------------------*/
-    /*
-     * Author:  Sumbhav Sethia
-     * Date:    
-     * Purpose: 
-     * Inputs:  
-     * Outputs: 
-     */    
-    
-    /*--------------------------------------------------------------------------*/
+
 
  /*--------------------------------------------------------------------------*/
     /*
@@ -344,8 +335,7 @@ public void displaySpeed(){
      * Outputs: the direction and the rotation opposite of the original.
      */  
     
-    static boolean buttonPressable = true;
-    static boolean flip = false;// if the direction and rotation are already flipped.
+    
     
     public boolean change(Joystick aStick){
         if (buttonPressable  && aStick.getRawButton(1)){
@@ -359,5 +349,15 @@ public void displaySpeed(){
     }
     /*--------------------------------------------------------------------------*/
 
-
+    
+    /*--------------------------------------------------------------------------*/
+    /*
+     * Author:  
+     * Date:    
+     * Purpose: 
+     * Inputs:  
+     * Outputs: 
+     */    
+    
+    /*--------------------------------------------------------------------------*/
 }
