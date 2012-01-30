@@ -15,19 +15,23 @@ import edu.wpi.first.wpilibj.Compressor;
 /**
  * The VM is configured to automatically run this class, and to call the
  * functions corresponding to each mode, as described in the IterativeRobot
- * documentation. If you change the name of this class or the package after
+ * documentation. If you driveBackwards the name of this class or the package after
  * creating this project, you must also update the manifest file in the resource
  * directory.
  */
 public class TPARobot extends IterativeRobot {
     static final boolean DEBUG = true;              // Debug Trigger
     static final boolean CAMERA = false;            // Camera Trigger
-    static boolean buttonPressable = true;          // Flag for backwards driving 
-    static boolean flip = false;                    // If the direction and rotation are already flipped.
+    static final double STOP_VALUE = 0.1;           // Value sent to each motor when the robot is stopping
+    static final double CONVEYOR_SPEED = 0.5;       // THe speed the conveyor motor will be set to move
+    static boolean shoot2ButtonPressable = true;    // Flag for pressability of button 3 on the shooting joystick
+    static boolean left1ButtonPressable = true;     // Flag for pressablity of the trigger on the left joystick
+    static boolean flipDriveDirection = false;      // Determines whether the robot is moving forward or backward
+    static boolean conveyorMoving = true;           // Determines whether the conveyor is moving
+    Jaguar theConveyorMotor;                        // The motor on the conveyor belt
     AxisCamera theAxisCamera;                       // The camera
     DriverStationLCD theDriverStationLCD;           // Object representing the driver station   
     public double theMaxSpeed;                      // Multiplier for speed, determined by Z-Axis on left stick
-    static final double STOP_VALUE = 0.1;           // Value sent to each motor when the robot is stopping
     Encoder theFrontLeftEncoder;                    // The front left E4P
     Encoder theRearLeftEncoder;                     // The rear left E4P
     Encoder theFrontRightEncoder;                   // The front right E4P
@@ -38,6 +42,7 @@ public class TPARobot extends IterativeRobot {
     double theRearRightOutput;                      // The output sent to the rear right motor
     Joystick theRightStick;                         // Right joystick
     Joystick theLeftStick;                          // Left joystick
+    Joystick theShootingStick;                      // The joystick used for all aspects of the shooting system
     TPARobotDriver theRobotDrive;                   // Robot Drive System
     double theDriveDirection;                       // Direction the robot will move
     double theDriveMagnitude;                       // Speed the robot will move at
@@ -77,7 +82,6 @@ public class TPARobot extends IterativeRobot {
         if (DEBUG == true){
             System.out.println("theRobotDrive constructed successfully");
         }
-        
 
         //Defines four E4P Motion Sensors at ports 1,2,3,4,5,6,7, and 8
         theFrontLeftEncoder = new Encoder(2,1);
@@ -92,7 +96,12 @@ public class TPARobot extends IterativeRobot {
             System.out.println("The Encoders constructed successfully");
         }
 
-
+        // Initialize the Conveyor belt motor at port 5
+        theConveyorMotor = new Jaguar(5);
+        if (DEBUG == true){
+            System.out.println("The Conveyor Motor constructed successfully");
+        }
+        
         //Initialize the DriverStationLCD
         theDriverStationLCD = DriverStationLCD.getInstance();
         if (DEBUG == true) {
@@ -237,10 +246,10 @@ public class TPARobot extends IterativeRobot {
         System.out.println("The drive magnitude is" + theDriveMagnitude);
         System.out.println("The drive direction is" + theDriveDirection);
         }
-        if (!change(theLeftStick)){
+        if (!driveBackwards(theLeftStick)){
             theRobotDrive.mecanumDrive_Polar(theDriveMagnitude, theDriveDirection, theDriveRotation);
         }
-        else if (change(theLeftStick)){
+        else if (driveBackwards(theLeftStick)){
             if (theDriveDirection > 0){
                 theDriveDirection = theDriveDirection - 180;
             }
@@ -333,18 +342,61 @@ public class TPARobot extends IterativeRobot {
      * Outputs: the direction and the rotation opposite of the original.
      */  
     
-    public boolean change(Joystick aStick){
-        if (buttonPressable  && aStick.getRawButton(1)){
-            flip = (flip) ? false : true;// if flip is false, make it true and vice versa.
-            buttonPressable = false;
+    public boolean driveBackwards(Joystick aStick){
+        if (left1ButtonPressable  && aStick.getRawButton(1)){
+            flipBoolean (flipDriveDirection); // if flip is false, make it true and vice versa.
+            left1ButtonPressable = false;
         }
         if (!aStick.getRawButton(1)){
-          buttonPressable = true;  
+          left1ButtonPressable = true;  
         }
-        return flip;
+        return flipDriveDirection;
     }
     /*--------------------------------------------------------------------------*/
 
+    
+    /*--------------------------------------------------------------------------*/
+    /*
+     * Author:  Marissa Beene
+     * Date:    1/29/12
+     * Purpose: To run a conveyor belt and allow for it to be turned on and off with
+     *          a button press
+     * Inputs:  Joystick aStick - the joystick that runs the conveyor
+     *          double aSpeed - the speed to run the conveyor at
+     * Outputs: None
+     */    
+    
+    public void runConveyor(Joystick aStick, double aSpeed){
+        if(shoot2ButtonPressable && aStick.getRawButton(2)){
+            flipBoolean(conveyorMoving);
+            shoot2ButtonPressable = false;
+        }
+        else{
+            shoot2ButtonPressable = true;
+        }
+        theConveyorMotor.set(aSpeed);
+    }
+    /*--------------------------------------------------------------------------*/
+    
+    
+    /*--------------------------------------------------------------------------*/
+    /*
+     * Author:  Marissa Beene
+     * Date:    1/29/12
+     * Purpose: To flip the value of a boolean
+     * Inputs:  boolean aBoolean - the boolean to be flipped
+     * Outputs: boolean - the flipped version of the boolean
+     */    
+    
+    public boolean flipBoolean(boolean aBoolean){
+        if(aBoolean){
+            return false;
+        }
+        else{
+            return true;
+        }
+    }
+    /*--------------------------------------------------------------------------*/
     
     /*--------------------------------------------------------------------------*/
     /*
