@@ -40,7 +40,7 @@ public class TPARobot extends IterativeRobot {
     double theRearRightOutput;                      // The output sent to the rear right motor
     Joystick theRightStick;                         // Right joystick
     Joystick theLeftStick;                          // Left joystick
-    RobotDrive theRobotDrive;                   // Robot Drive System
+    TPARobotDriver theRobotDrive;                   // Robot Drive System
     double theDriveDirection;                       // Direction the robot will move
     double theDriveMagnitude;                       // Speed the robot will move at
     double theDriveRotation;                        // Value the robot will rotate
@@ -270,7 +270,7 @@ public class TPARobot extends IterativeRobot {
     public void setMaxSpeed(){
         
         theMaxSpeed = (theLeftStick.getZ() + 1.0)/2.0;
-       // theRobotDrive.setMaxSpeed(theMaxSpeed); // sets the multiplier
+        theRobotDrive.setMaxSpeed(theMaxSpeed); // sets the multiplier
     }
     /*--------------------------------------------------------------------------*/
 
