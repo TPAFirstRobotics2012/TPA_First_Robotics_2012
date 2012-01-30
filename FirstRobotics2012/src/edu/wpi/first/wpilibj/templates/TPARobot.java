@@ -40,7 +40,7 @@ public class TPARobot extends IterativeRobot {
     double theRearRightOutput;                      // The output sent to the rear right motor
     Joystick theRightStick;                         // Right joystick
     Joystick theLeftStick;                          // Left joystick
-    RobotDrive theRobotDrive;                   // Robot Drive System
+    TPARobotDriver theRobotDrive;                   // Robot Drive System
     double theDriveDirection;                       // Direction the robot will move
     double theDriveMagnitude;                       // Speed the robot will move at
     double theDriveRotation;                        // Value the robot will rotate
@@ -223,17 +223,35 @@ public class TPARobot extends IterativeRobot {
      * Outputs: None
      */    
     public void driveRobot() {
+        
         theDriveDirection = theLeftStick.getDirectionDegrees(); // Set the direction to the value of the left stick
         theDriveMagnitude = theLeftStick.getMagnitude();    // Set the magnitude to the value of the left stick
         theDriveRotation = (theRightStick.getX()); // Set the rotation to the value of the right stick
-        theRobotDrive.mecanumDrive_Polar(theDriveMagnitude, theDriveDirection, theDriveRotation );
         //theRobotDrive.mecanumDrive_Polar(.3, 180, 0);
         if (DEBUG == true){ 
         System.out.println("The drive rotation in degrees" + theDriveRotation);
         System.out.println("The drive magnitude is" + theDriveMagnitude);
         System.out.println("The drive direction is" + theDriveDirection);
         }
-    }   
+        if (!change(theLeftStick)){
+            theRobotDrive.mecanumDrive_Polar(theDriveMagnitude, theDriveDirection, theDriveRotation);
+        }
+        else if (change(theLeftStick)){
+            if (theDriveDirection > 0){
+                theDriveDirection = theDriveDirection - 180;
+            }
+            else{
+                theDriveDirection = 180 + theDriveDirection;
+            }
+            theDriveRotation = -theDriveRotation;
+            theRobotDrive.mecanumDrive_Polar(theDriveMagnitude, theDriveDirection, theDriveRotation);
+        }
+        if (DEBUG == true){
+            System.out.println("The drive rotation is" + theDriveRotation);
+            System.out.println("The drive magnitude is" + theDriveMagnitude);
+            System.out.println("The drive direction in degrees is" + theDriveDirection);
+        }    
+    }
 
     /*--------------------------------------------------------------------------*/
 
@@ -251,8 +269,8 @@ public class TPARobot extends IterativeRobot {
      */    
     public void setMaxSpeed(){
         
-        theMaxSpeed = (theLeftStick.getZ() + 1.0)/2.0;
-       // theRobotDrive.setMaxSpeed(theMaxSpeed); // sets the multiplier
+        theMaxSpeed = (theLeftStick.getZ() - 1.0)/(-2.0);
+        theRobotDrive.setMaxSpeed(theMaxSpeed); // sets the multiplier
     }
     /*--------------------------------------------------------------------------*/
 
@@ -279,13 +297,13 @@ public void displaySpeed(){
     afrs += tfr;
     arrs += trr;
     numberCollected++;
-    
+        
     if(numberCollected == 100){
         numberCollected =0;
         String print1 = "FLS: " + afls/100;
         String print2 = "RLS: " + arls/100;
         String print3 = "FRS: " + afrs/100;
-        String print4 = "RRS: " + arrs/100;
+        String print4 = "RRS: " + arrs/100; 
     
         theDriverStationLCD.println(DriverStationLCD.Line.kMain6, 1 , print1 );
         theDriverStationLCD.println(DriverStationLCD.Line.kUser2, 1 , print2 );
@@ -297,7 +315,7 @@ public void displaySpeed(){
         arls=0;
         afrs=0;
         arrs=0;
-    }
+    } 
    
     
     
@@ -318,13 +336,27 @@ public void displaySpeed(){
 
  /*--------------------------------------------------------------------------*/
     /*
-     * Author:  
-     * Date:    
-     * Purpose: 
+     * Author: Andrew Matsumoto
+     * Date: 1/26/12   
+     * Purpose: decides whether the button to make the direction and rotation 
+     * opposite of what they are originally is pressed 
      * Inputs:  
-     * Outputs: 
-     */    
+     * Outputs: the direction and the rotation opposite of the original.
+     */  
     
+    static boolean buttonPressable = true;
+    static boolean flip = false;// if the direction and rotation are already flipped.
+    
+    public boolean change(Joystick aStick){
+        if (buttonPressable  && aStick.getRawButton(1)){
+            flip = (flip) ? false : true;// if flip is false, make it true and vice versa.
+            buttonPressable = false;
+        }
+        if (!aStick.getRawButton(1)){
+          buttonPressable = true;  
+        }
+        return flip;
+    }
     /*--------------------------------------------------------------------------*/
 
 
