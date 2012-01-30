@@ -8,32 +8,30 @@
 package edu.wpi.first.wpilibj.templates;
 
 
-import edu.wpi.first.wpilibj.DriverStationLCD;
-import edu.wpi.first.wpilibj.IterativeRobot;
-import edu.wpi.first.wpilibj.Joystick;
-import edu.wpi.first.wpilibj.Encoder;
-import edu.wpi.first.wpilibj.Watchdog;
+import edu.wpi.first.wpilibj.*;
 import edu.wpi.first.wpilibj.camera.AxisCamera;
+import edu.wpi.first.wpilibj.Compressor;
 
 /**
  * The VM is configured to automatically run this class, and to call the
  * functions corresponding to each mode, as described in the IterativeRobot
- * documentation. If you change the name of this class or the package after
+ * documentation. If you driveBackwards the name of this class or the package after
  * creating this project, you must also update the manifest file in the resource
  * directory.
  */
 public class TPARobot extends IterativeRobot {
     static final boolean DEBUG = true;              // Debug Trigger
     static final boolean CAMERA = false;            // Camera Trigger
+    static final double STOP_VALUE = 0.1;           // Value sent to each motor when the robot is stopping
+    static final double CONVEYOR_SPEED = 0.5;       // THe speed the conveyor motor will be set to move
+    static boolean shoot2ButtonPressable = true;    // Flag for pressability of button 3 on the shooting joystick
+    static boolean left1ButtonPressable = true;     // Flag for pressablity of the trigger on the left joystick
+    static boolean flipDriveDirection = false;      // Determines whether the robot is moving forward or backward
+    static boolean conveyorMoving = true;           // Determines whether the conveyor is moving
+    Jaguar theConveyorMotor;                        // The motor on the conveyor belt
     AxisCamera theAxisCamera;                       // The camera
     DriverStationLCD theDriverStationLCD;           // Object representing the driver station   
-    // Drive mode selection
-    int theDriveMode;                               // The actual drive mode that is currently selected.
-    static final int UNINITIALIZED_DRIVE = 0;       // Value when no drive mode is selected
-    static final int ARCADE_DRIVE = 1;              // Value when arcade mode is selected 
-    static final int TANK_DRIVE = 2;                // Value when tank drive is selected
     public double theMaxSpeed;                      // Multiplier for speed, determined by Z-Axis on left stick
-    static final double STOP_VALUE = 0.1;           // Value sent to each motor when the robot is stopping
     Encoder theFrontLeftEncoder;                    // The front left E4P
     Encoder theRearLeftEncoder;                     // The rear left E4P
     Encoder theFrontRightEncoder;                   // The front right E4P
@@ -44,12 +42,18 @@ public class TPARobot extends IterativeRobot {
     double theRearRightOutput;                      // The output sent to the rear right motor
     Joystick theRightStick;                         // Right joystick
     Joystick theLeftStick;                          // Left joystick
+    Joystick theShootingStick;                      // The joystick used for all aspects of the shooting system
     TPARobotDriver theRobotDrive;                   // Robot Drive System
     double theDriveDirection;                       // Direction the robot will move
     double theDriveMagnitude;                       // Speed the robot will move at
     double theDriveRotation;                        // Value the robot will rotate
+    Compressor theCompressor;                       // The air compressor
 
-   
+    double afls =0;
+    double afrs =0;
+    double arls =0;
+    double arrs =0;
+    int numberCollected=0;
 
 
    
@@ -78,23 +82,38 @@ public class TPARobot extends IterativeRobot {
         if (DEBUG == true){
             System.out.println("theRobotDrive constructed successfully");
         }
-        
-/*
-        // Defines four E4P Motion Sensors at ports 1,2,3,4,5,6,7, and 8
-        theFrontLeftEncoder = new Encoder(1,2);
-        theRearLeftEncoder = new Encoder(3,4);
-        theFrontRightEncoder = new Encoder(5,6);
-        theRearRightEncoder = new Encoder(7,8);
+
+        //Defines four E4P Motion Sensors at ports 1,2,3,4,5,6,7, and 8
+        theFrontLeftEncoder = new Encoder(2,1);
+        theFrontLeftEncoder.start();
+        theRearLeftEncoder = new Encoder(6,5);
+        theRearLeftEncoder.start();
+        theFrontRightEncoder = new Encoder(4,3);
+        theFrontRightEncoder.start();
+        theRearRightEncoder = new Encoder(8,7);
+        theRearRightEncoder.start();
         if (DEBUG == true){
             System.out.println("The Encoders constructed successfully");
         }
- */
 
+        // Initialize the Conveyor belt motor at port 5
+        theConveyorMotor = new Jaguar(5);
+        if (DEBUG == true){
+            System.out.println("The Conveyor Motor constructed successfully");
+        }
+        
         //Initialize the DriverStationLCD
         theDriverStationLCD = DriverStationLCD.getInstance();
         if (DEBUG == true) {
             System.out.println("DriverStationLCD initialized");
         }
+        
+        //Initialize the compressor in ports 6 and 6
+        theCompressor = new Compressor (6,6);
+        if (DEBUG == true){
+            System.out.println("The Compressor constructed successfully");
+        }
+        theCompressor.start(); //Instantly turn the compressor on
         
         //Initialize the AxisCamera
         if (CAMERA == true){
@@ -110,9 +129,6 @@ public class TPARobot extends IterativeRobot {
                 System.out.println("CAMERA set to false");
             }
         }
-     
-        // Initialize the Drive Mode to Uninitialized
-        theDriveMode = UNINITIALIZED_DRIVE;
         
         // Default the robot to not move
         theDriveDirection = 0;
@@ -195,6 +211,9 @@ public class TPARobot extends IterativeRobot {
         if(DEBUG == true){
             System.out.println("driveRobot called");
         }
+        
+        displaySpeed();
+        System.out.println("displaySpeed called");
 /*
         // Brake the robot if no joysick input.
         brakeOnNeutral();
@@ -217,26 +236,42 @@ public class TPARobot extends IterativeRobot {
      * Outputs: None
      */    
     public void driveRobot() {
+        
         theDriveDirection = theLeftStick.getDirectionDegrees(); // Set the direction to the value of the left stick
         theDriveMagnitude = theLeftStick.getMagnitude();    // Set the magnitude to the value of the left stick
         theDriveRotation = (theRightStick.getX()); // Set the rotation to the value of the right stick
-        theRobotDrive.mecanumDrive_Polar(theDriveMagnitude, theDriveDirection, theDriveRotation);
-        
-        if (DEBUG == true){
+        //theRobotDrive.mecanumDrive_Polar(.3, 180, 0);
+        if (DEBUG == true){ 
         System.out.println("The drive rotation in degrees" + theDriveRotation);
         System.out.println("The drive magnitude is" + theDriveMagnitude);
         System.out.println("The drive direction is" + theDriveDirection);
         }
-    }   
+        if (!driveBackwards(theLeftStick)){
+            theRobotDrive.mecanumDrive_Polar(theDriveMagnitude, theDriveDirection, theDriveRotation);
+        }
+        else if (driveBackwards(theLeftStick)){
+            if (theDriveDirection > 0){
+                theDriveDirection = theDriveDirection - 180;
+            }
+            else{
+                theDriveDirection = 180 + theDriveDirection;
+            }
+            theDriveRotation = -theDriveRotation;
+            theRobotDrive.mecanumDrive_Polar(theDriveMagnitude, theDriveDirection, theDriveRotation);
+        }
+        if (DEBUG == true){
+            System.out.println("The drive rotation is" + theDriveRotation);
+            System.out.println("The drive magnitude is" + theDriveMagnitude);
+            System.out.println("The drive direction in degrees is" + theDriveDirection);
+        }    
+    }
 
     /*--------------------------------------------------------------------------*/
-    
-    
-  
+                    
     
     /*--------------------------------------------------------------------------*/
     /*
-     * Author:  Gennaro De Luca
+     * Author:  Gennaro De Luca, Marissa Beene
      * Date:    11/26/2011 (Gennaro De Luca)
      * Purpose: To determine the speed multiplier based on the "Z" wheel on 
      *          the left joystick. Responds as a gradient. If the "Z" wheel on the
@@ -246,7 +281,7 @@ public class TPARobot extends IterativeRobot {
      */    
     public void setMaxSpeed(){
         
-        theMaxSpeed = (theLeftStick.getZ() + 1.0)/2.0;
+        theMaxSpeed = (theLeftStick.getZ() - 1.0)/(-2.0); // z-axis is inverted
         theRobotDrive.setMaxSpeed(theMaxSpeed); // sets the multiplier
     }
     /*--------------------------------------------------------------------------*/
@@ -262,9 +297,105 @@ public class TPARobot extends IterativeRobot {
      */    
     
     /*--------------------------------------------------------------------------*/
+    public void displaySpeed(){
 
+        double tfl = theFrontLeftEncoder.getRate();
+        double trl = theRearLeftEncoder.getRate();
+        double tfr = theFrontRightEncoder.getRate();
+        double trr = theRearRightEncoder.getRate();
+
+        afls += tfl;
+        arls += trl;
+        afrs += tfr;
+        arrs += trr;
+        numberCollected++;
+
+        if(numberCollected == 100){
+            numberCollected =0;
+            String print1 = "FLS: " + afls/100;
+            String print2 = "RLS: " + arls/100;
+            String print3 = "FRS: " + afrs/100;
+            String print4 = "RRS: " + arrs/100; 
+
+            theDriverStationLCD.println(DriverStationLCD.Line.kMain6, 1 , print1 );
+            theDriverStationLCD.println(DriverStationLCD.Line.kUser2, 1 , print2 );
+            theDriverStationLCD.println(DriverStationLCD.Line.kUser3, 1 , print3 );
+            theDriverStationLCD.println(DriverStationLCD.Line.kUser4, 1 , print4 );
+            theDriverStationLCD.updateLCD();
+
+            afls=0;
+            arls=0;
+            afrs=0;
+            arrs=0;
+        } 
+    }
+    /*--------------------------------------------------------------------------*/
+
+
+    /*--------------------------------------------------------------------------*/
+    /*
+     * Author: Andrew Matsumoto
+     * Date: 1/26/12   
+     * Purpose: decides whether the button to make the direction and rotation 
+     * opposite of what they are originally is pressed 
+     * Inputs:  
+     * Outputs: the direction and the rotation opposite of the original.
+     */  
+    
+    public boolean driveBackwards(Joystick aStick){
+        if (left1ButtonPressable  && aStick.getRawButton(1)){
+            flipBoolean (flipDriveDirection); // if flip is false, make it true and vice versa.
+            left1ButtonPressable = false;
+        }
+        if (!aStick.getRawButton(1)){
+          left1ButtonPressable = true;  
+        }
+        return flipDriveDirection;
+    }
+    /*--------------------------------------------------------------------------*/
 
     
+    /*--------------------------------------------------------------------------*/
+    /*
+     * Author:  Marissa Beene
+     * Date:    1/29/12
+     * Purpose: To run a conveyor belt and allow for it to be turned on and off with
+     *          a button press
+     * Inputs:  Joystick aStick - the joystick that runs the conveyor
+     *          double aSpeed - the speed to run the conveyor at
+     * Outputs: None
+     */    
+    
+    public void runConveyor(Joystick aStick, double aSpeed){
+        if(shoot2ButtonPressable && aStick.getRawButton(2)){
+            flipBoolean(conveyorMoving);
+            shoot2ButtonPressable = false;
+        }
+        else{
+            shoot2ButtonPressable = true;
+        }
+        theConveyorMotor.set(aSpeed);
+    }
+    /*--------------------------------------------------------------------------*/
+    
+    
+    /*--------------------------------------------------------------------------*/
+    /*
+     * Author:  Marissa Beene
+     * Date:    1/29/12
+     * Purpose: To flip the value of a boolean
+     * Inputs:  boolean aBoolean - the boolean to be flipped
+     * Outputs: boolean - the flipped version of the boolean
+     */    
+    
+    public boolean flipBoolean(boolean aBoolean){
+        if(aBoolean){
+            return false;
+        }
+        else{
+            return true;
+        }
+    }
     /*--------------------------------------------------------------------------*/
     
     /*--------------------------------------------------------------------------*/
@@ -277,7 +408,4 @@ public class TPARobot extends IterativeRobot {
      */    
     
     /*--------------------------------------------------------------------------*/
-
-
-
 }
