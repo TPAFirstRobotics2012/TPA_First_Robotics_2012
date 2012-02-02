@@ -46,6 +46,7 @@ public class TPARobot extends IterativeRobot {
     double theDriveDirection;                       // Direction the robot will move
     double theDriveMagnitude;                       // Speed the robot will move at
     double theDriveRotation;                        // Value the robot will rotate
+    TPAUltrasonicAnalogSensor theTPAUltrasonic;    // The ultrasonic sensor
 
     double afls =0;
     double afrs =0;
@@ -128,6 +129,9 @@ public class TPARobot extends IterativeRobot {
             System.out.println("The robot set to not move");
         }
         
+        // Initialize the ultrasonic sensor
+        theTPAUltrasonic = new TPAUltrasonicAnalogSensor(1,1);
+        
         if (DEBUG == true){
         System.out.println("RobotInit() completed.\n");
         }
@@ -202,14 +206,18 @@ public class TPARobot extends IterativeRobot {
             System.out.println("driveRobot called");
         }
         displaySpeed();
-        System.out.println("displaySPeed called");
+        System.out.println("displaySpeed called");
 /*
         // Brake the robot if no joysick input.
         brakeOnNeutral();
         if(DEBUG == true) {
             System.out.println("brakeOnNeutral called");
         }
-*/        
+*/       
+        // Display the distance from ultrasonic sensor (for testing)
+        theTPAUltrasonic.enable();
+        System.out.println("Distance from sensor: " + theTPAUltrasonic.getDistance());
+        theDriverStationLCD.println(DriverStationLCD.Line.kUser5, 1, "Distance from sensor: " + theTPAUltrasonic.getDistance());
     }
     /*--------------------------------------------------------------------------*/
     
