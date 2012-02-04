@@ -320,14 +320,11 @@ public void displaySpeed(){
      * Outputs: None
      */
         public void DropBallIntoShooter(Joystick aStick) {
-            if(aStick.getRawButton(3)) {
-               theWedgeUp.set(false);
-               theWedgeDown.set(true);
-               Thread.yield();
-               Timer.delay(2.0);
-               Thread.yield();
+            if(aStick.getRawButton(3)) {        //Throws ball into shooter
                theWedgeUp.set(true);
                theWedgeDown.set(false);
+               theWedgeUp.set(false);
+               theWedgeDown.set(true);
             }
         }
     
