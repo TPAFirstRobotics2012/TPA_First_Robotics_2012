@@ -28,13 +28,16 @@ public class TPARobot extends IterativeRobot {
     static final double SHOOTING_SPEED_3 = 0.5;     // The speed of the shooter controlled by button 3
     static final double SHOOTING_SPEED_5 = 1.0;     // The speed of the shooter controlled by button 5
     double theShootingSpeed;                        // The actual speed the shooter is running at
-    static boolean shoot6ButtonPressable = true;    // Flag for pressability of button 3 on the shooting joystick
+    static boolean shoot8ButtonPressable = true;    // Flag for pressablilty of button 8 on the shooting joystick
+    static boolean shoot6ButtonPressable = true;    // Flag for pressability of button 6 on the shooting joystick
     static boolean shoot4ButtonPressable = true;    // Flag for pressability of button 4 on the shooting joystick 
     static boolean shoot3ButtonPressable = true;    // Flag for pressability of button 3 on the shooting joystick 
     static boolean shoot5ButtonPressable = true;    // Flag for pressability of button 5 on the shooting joystick
     static boolean left1ButtonPressable = true;     // Flag for pressablity of the trigger on the left joystick
     static boolean flipDriveDirection = false;      // Determines whether the robot is moving forward or backward
     static boolean conveyorMoving = true;           // Determines whether the conveyor is moving
+    static boolean ultrasonicSensorOn = false;      // Determines whether the ultrasonic sensor is on
+    static double theDistance;                      // The distance returned by the ultrasonic sensor
     Jaguar theConveyorMotor;                        // The motor on the conveyor belt
     Jaguar theTopShootingMotor;                     // The shooting motor on the top
     Jaguar theBottomShootingMotor;                  // The shooting motor on the bottom
@@ -57,6 +60,7 @@ public class TPARobot extends IterativeRobot {
     double theDriveMagnitude;                       // Speed the robot will move at
     double theDriveRotation;                        // Value the robot will rotate
     Compressor theCompressor;                       // The air compressor
+    TPAUltrasonicAnalogSensor theUltrasonicSensor;  // The ultrasonic sensor
 
     double afls =0;
     double afrs =0;
@@ -475,12 +479,32 @@ public class TPARobot extends IterativeRobot {
     
     /*--------------------------------------------------------------------------*/
     /*
-     * Author:  
-     * Date:    
-     * Purpose: 
-     * Inputs:  
+     * Author:  Marissa Beene
+     * Date:    2/4/2012
+     * Purpose: To run the ultrasonic sensor. A press of button 8 toggles it on 
+     *          and off.
+     * Inputs:  Joystick aStick - the Joystick controlling the analog sensor
+     *          TPAUltrasonicAnalogSensor aSensor - the ultrasonic sensor
      * Outputs: 
      */    
+    
+    public void runUltrasonicSensor(Joystick aStick, TPAUltrasonicAnalogSensor aSensor){
+        if (shoot8ButtonPressable && aStick.getRawButton(8)){
+            flipBoolean(ultrasonicSensorOn);
+            shoot8ButtonPressable = false;
+        }
+        else{
+            shoot8ButtonPressable = true;
+        }
+        if (ultrasonicSensorOn == true){
+            aSensor.enable();
+        }
+        else{
+            aSensor.disable();
+        }
+        theDistance = aSensor.getDistance();
+        theDriverStationLCD.println(DriverStationLCD.Line.kUser6,1, "" + theDistance);
+    }
     
     /*--------------------------------------------------------------------------*/
     
