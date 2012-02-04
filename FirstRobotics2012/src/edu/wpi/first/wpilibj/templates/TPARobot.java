@@ -323,7 +323,9 @@ public void displaySpeed(){
             if(aStick.getRawButton(3)) {
                theWedgeUp.set(false);
                theWedgeDown.set(true);
+               Thread.yield();
                Timer.delay(2.0);
+               Thread.yield();
                theWedgeUp.set(true);
                theWedgeDown.set(false);
             }
