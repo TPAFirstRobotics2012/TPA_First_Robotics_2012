@@ -23,12 +23,21 @@ public class TPARobot extends IterativeRobot {
     static final boolean DEBUG = true;              // Debug Trigger
     static final boolean CAMERA = false;            // Camera Trigger
     static final double STOP_VALUE = 0.1;           // Value sent to each motor when the robot is stopping
-    static final double CONVEYOR_SPEED = 0.5;       // THe speed the conveyor motor will be set to move
-    static boolean shoot2ButtonPressable = true;    // Flag for pressability of button 3 on the shooting joystick
+    static final double CONVEYOR_SPEED = 0.5;       // The speed the conveyor motor will be set to move
+    static final double SHOOTING_SPEED_4 = 0.1;     // The speed of the shooter controlled by button 4
+    static final double SHOOTING_SPEED_3 = 0.5;     // The speed of the shooter controlled by button 3
+    static final double SHOOTING_SPEED_5 = 1.0;     // The speed of the shooter controlled by button 5
+    double theShootingSpeed;                        // The actual speed the shooter is running at
+    static boolean shoot6ButtonPressable = true;    // Flag for pressability of button 3 on the shooting joystick
+    static boolean shoot4ButtonPressable = true;    // Flag for pressability of button 4 on the shooting joystick 
+    static boolean shoot3ButtonPressable = true;    // Flag for pressability of button 3 on the shooting joystick 
+    static boolean shoot5ButtonPressable = true;    // Flag for pressability of button 5 on the shooting joystick
     static boolean left1ButtonPressable = true;     // Flag for pressablity of the trigger on the left joystick
     static boolean flipDriveDirection = false;      // Determines whether the robot is moving forward or backward
     static boolean conveyorMoving = true;           // Determines whether the conveyor is moving
     Jaguar theConveyorMotor;                        // The motor on the conveyor belt
+    Jaguar theTopShootingMotor;                     // The shooting motor on the top
+    Jaguar theBottomShootingMotor;                  // The shooting motor on the bottom
     AxisCamera theAxisCamera;                       // The camera
     DriverStationLCD theDriverStationLCD;           // Object representing the driver station   
     public double theMaxSpeed;                      // Multiplier for speed, determined by Z-Axis on left stick
@@ -101,6 +110,13 @@ public class TPARobot extends IterativeRobot {
         theConveyorMotor = new Jaguar(5);
         if (DEBUG == true){
             System.out.println("The Conveyor Motor constructed successfully");
+        }
+        
+        // Intialize the two shooting motors at ports 6 and 7
+        theTopShootingMotor = new Jaguar(6);
+        theBottomShootingMotor = new Jaguar (7);
+        if (DEBUG == true){
+            System.out.println("The Shooting Motors constructed successfully");
         }
         
         //Initialize the DriverStationLCD
@@ -223,6 +239,12 @@ public class TPARobot extends IterativeRobot {
         displaySpeed();
         if (DEBUG == true){
             System.out.println("displaySpeed called");
+        }
+        
+        // Run the shooter
+        runShooter(determineShootingSpeed(theShootingStick));
+        if (DEBUG == true){
+            System.out.println("runShooter called");
         }
 /*
         // Brake the robot if no joysick input.
@@ -377,12 +399,12 @@ public class TPARobot extends IterativeRobot {
      */    
     
     public void runConveyor(Joystick aStick, double aSpeed){
-        if(shoot2ButtonPressable && aStick.getRawButton(2)){
+        if(shoot6ButtonPressable && aStick.getRawButton(6)){
             flipBoolean(conveyorMoving);
-            shoot2ButtonPressable = false;
+            shoot6ButtonPressable = false;
         }
         else{
-            shoot2ButtonPressable = true;
+            shoot6ButtonPressable = true;
         }
         theConveyorMotor.set(aSpeed);
     }
@@ -408,6 +430,49 @@ public class TPARobot extends IterativeRobot {
     }
     /*--------------------------------------------------------------------------*/
     
+    
+    /*--------------------------------------------------------------------------*/
+    /*
+     * Author:  Marissa Beene
+     * Date:    2/4/12
+     * Purpose: To run a shooter with two motors controlling four wheels. One motor
+     *          will run counterclockwise, the other will run clockwise.
+     * Inputs:  double aSpeed - the speed the motors will run in
+     * Outputs: None
+     */    
+    
+    public void runShooter(double aSpeed){
+        theTopShootingMotor.set(aSpeed);
+        theBottomShootingMotor.set(-aSpeed);
+    }    
+    /*--------------------------------------------------------------------------*/
+
+    
+    /*--------------------------------------------------------------------------*/
+    /*
+     * Author:  Marissa Beene
+     * Date:    2/4/12
+     * Purpose: To determine the speed at which the wheels on the shooter will run.
+     *          The speeds are controlled by buttons 4, 3, and 5 on the Joystick.
+     * Inputs:  Joystick aStick - the joystick which controls the speed
+     * Outputs: double theShootingSpeed - the speed the shooter will run at
+     */    
+    
+    public double determineShootingSpeed(Joystick aStick){
+        if(shoot4ButtonPressable && aStick.getRawButton(4)){
+            theShootingSpeed = SHOOTING_SPEED_4;
+        }
+        if(shoot3ButtonPressable && aStick.getRawButton(3)){
+            theShootingSpeed = SHOOTING_SPEED_3;
+        }
+        if(shoot5ButtonPressable && aStick.getRawButton(5)){
+            theShootingSpeed = SHOOTING_SPEED_5;
+        }
+        return theShootingSpeed;
+    }
+    /*--------------------------------------------------------------------------*/
+        
+    
     /*--------------------------------------------------------------------------*/
     /*
      * Author:  
@@ -418,4 +483,6 @@ public class TPARobot extends IterativeRobot {
      */    
     
     /*--------------------------------------------------------------------------*/
+    
+    
 }
