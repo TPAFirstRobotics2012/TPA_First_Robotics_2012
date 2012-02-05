@@ -27,7 +27,8 @@ public class TPARobot extends IterativeRobot {
     static final double SHOOTING_SPEED_4 = 0.1;     // The speed of the shooter controlled by button 4
     static final double SHOOTING_SPEED_3 = 0.5;     // The speed of the shooter controlled by button 3
     static final double SHOOTING_SPEED_5 = 1.0;     // The speed of the shooter controlled by button 5
-    double theShootingSpeed;                        // The actual speed the shooter is running at
+    static final int theAveragingValue = 10;
+    double theShootingSpeed;                        // The actual speed the shooter is running
     static boolean shoot8ButtonPressable = true;    // Flag for pressablilty of button 8 on the shooting joystick
     static boolean shoot6ButtonPressable = true;    // Flag for pressability of button 6 on the shooting joystick
     static boolean shoot4ButtonPressable = true;    // Flag for pressability of button 4 on the shooting joystick 
@@ -37,6 +38,9 @@ public class TPARobot extends IterativeRobot {
     static boolean flipDriveDirection = false;      // Determines whether the robot is moving forward or backward
     static boolean conveyorMoving = true;           // Determines whether the conveyor is moving
     static boolean ultrasonicSensorOn = false;      // Determines whether the ultrasonic sensor is on
+    static double theAccumulatedDistance;
+    static int theDistancesCollected;
+    static double theAveragedDistance;
     static double theDistance;                      // The distance returned by the ultrasonic sensor
     Jaguar theConveyorMotor;                        // The motor on the conveyor belt
     Jaguar theTopShootingMotor;                     // The shooting motor on the top
@@ -366,11 +370,11 @@ public class TPARobot extends IterativeRobot {
             String print3 = "FRS: " + afrs/100;
             String print4 = "RRS: " + arrs/100; 
 
-            theDriverStationLCD.println(DriverStationLCD.Line.kMain6, 1 , print1 );
+          /*  theDriverStationLCD.println(DriverStationLCD.Line.kMain6, 1 , print1 );
             theDriverStationLCD.println(DriverStationLCD.Line.kUser2, 1 , print2 );
             theDriverStationLCD.println(DriverStationLCD.Line.kUser3, 1 , print3 );
             theDriverStationLCD.println(DriverStationLCD.Line.kUser4, 1 , print4 );
-            theDriverStationLCD.updateLCD();
+            theDriverStationLCD.updateLCD(); */
 
             afls=0;
             arls=0;
@@ -503,31 +507,43 @@ public class TPARobot extends IterativeRobot {
     
     public void runUltrasonicSensor(Joystick aStick, TPAUltrasonicAnalogSensor aSensor){
         if (shoot8ButtonPressable && aStick.getRawButton(8)){
-            flipBoolean(ultrasonicSensorOn);
+            ultrasonicSensorOn = flipBoolean(ultrasonicSensorOn);
             if(DEBUG == true){
+                theDriverStationLCD.println(DriverStationLCD.Line.kUser2, 1 , "RunUltrasonicSensor recognizes button 8 press" );
                 System.out.println("RunUltrasonicSensor recognizes button 8 press");
             }
             shoot8ButtonPressable = false;
         }
-        else{
+        if (!shoot8ButtonPressable && !aStick.getRawButton(8)){
             shoot8ButtonPressable = true;
+            theDriverStationLCD.println(DriverStationLCD.Line.kUser2, 1 , "In else statement" );
             System.out.println("In else statement");
             
         }
         if (ultrasonicSensorOn == true){
             aSensor.enable();
+            theDistance = aSensor.getDistance();
+            theAccumulatedDistance = theAccumulatedDistance + theDistance;
+            theDistancesCollected = theDistancesCollected + 1;
+            if (theDistancesCollected == theAveragingValue){
+                theAveragedDistance = theAccumulatedDistance/theDistancesCollected;
+                theDriverStationLCD.println(DriverStationLCD.Line.kUser6,1, "" + theAveragedDistance);
+                theAccumulatedDistance = 0;
+                theDistancesCollected = 0;
+            }
             if(DEBUG == true){
+                theDriverStationLCD.println(DriverStationLCD.Line.kUser4, 1 , "Sensor Enabled " );
                 System.out.println("Sensor Enabled");
             }
         }
         else{
             aSensor.disable();
+            theDriverStationLCD.println(DriverStationLCD.Line.kUser6,1, "Sensor not Enabled ");
             if(DEBUG == true){
+                theDriverStationLCD.println(DriverStationLCD.Line.kUser4, 1 , "Sensor Disabled" );
                 System.out.println("Sensor Disabled");
             }
         }
-        theDistance = aSensor.getDistance();
-        theDriverStationLCD.println(DriverStationLCD.Line.kUser6,1, "" + theDistance);
     }
     
     /*--------------------------------------------------------------------------*/
