@@ -133,9 +133,9 @@ public class TPARobotDriver extends RobotDrive {
      */
     
         static final int kFrontLeft_val = 0;            //The channel of the front left motor
-        static final int kFrontRight_val = 1;
-        static final int kRearLeft_val = 2;
-        static final int kRearRight_val = 3;
+        static final int kFrontRight_val = 1;           //The channel for the front right motor
+        static final int kRearLeft_val = 2;             //The channel for the rear left motor
+        static final int kRearRight_val = 3;            //The channel for the rear right motor
         double wheelSpeeds[] = new double[kMaxNumberOfMotors];
         double multipliers[] = new double[kMaxNumberOfMotors];
         
@@ -154,7 +154,7 @@ public class TPARobotDriver extends RobotDrive {
         wheelSpeeds[kRearLeft_val] = (cosD * magnitude + rotation);
         wheelSpeeds[kRearRight_val] = (sinD * magnitude - rotation);
 
-        normalize(wheelSpeeds);
+        normalize(wheelSpeeds);//Make sure wheelSpeeds are between -1 and 1
 
         byte syncGroup = (byte)0x80;
 
@@ -177,37 +177,39 @@ public class TPARobotDriver extends RobotDrive {
     }
         
         double speedSums[] = new double[kMaxNumberOfMotors];
-        int theCounter = 0;
+        int theCounter = 0;//Counts the number of times the speed is counted
         
     public void multiplierCalculator(double aFrontLeftSpeed, double aFrontRightSpeed, double aRearLeftSpeed, double aRearRightSpeed){
-
-        theCounter++;
         speedSums[kFrontLeft_val]+=Math.abs(aFrontLeftSpeed);
         speedSums[kFrontRight_val]+=Math.abs(aFrontRightSpeed);
         speedSums[kRearLeft_val]+=Math.abs(aRearLeftSpeed);
         speedSums[kRearRight_val]+=Math.abs(aRearRightSpeed);
          
+        //Averages the speed
         if(theCounter==5){
-            theCounter=0;
+            theCounter=0;//resets the counter
             for(int j = 0; j < kMaxNumberOfMotors;j++){
-                speedSums[j]=speedSums[j]/5;
+                speedSums[j]=speedSums[j]/5;//Aveage of the speedSums
             }
-            int ThePointer = 0;
+            int ThePointer = 0;//Marks the position of the greatest wheelSpeed
             for (int i = 1; i < 4; i++){
                 if (wheelSpeeds[i] > wheelSpeeds[ThePointer]){
                     ThePointer = i;
                 }
             }
-            for(int k =0; k< kMaxNumberOfMotors; k++){
+            //calculates the multipliers
+            for(int k = 0; k < kMaxNumberOfMotors; k++){
                 if(wheelSpeeds[k]!=0 && wheelSpeeds[ThePointer]!=0){
                     multipliers[k]=((speedSums[ThePointer]/speedSums[k])/(wheelSpeeds[ThePointer]/wheelSpeeds[k]));
                     System.out.println("(" + speedSums[ThePointer] + "/" +speedSums[k] +")");
                     System.out.println("(" + wheelSpeeds[ThePointer] + "/" +wheelSpeeds[k] +")");
                 }
             }
+            //Resets the speedSums
             for (int l = 0 ; l < kMaxNumberOfMotors; l++){
-                speedSums[l]=1;
+                speedSums[l]=1;//Set at 1 to prevent a division by 0
             }
+            //Limits the multipliers
             for(int n = 0; n < 4; n++){
                 if(multipliers[n]> 1.2)
                    multipliers[n] = 1.2;

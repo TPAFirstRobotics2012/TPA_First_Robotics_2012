@@ -229,12 +229,14 @@ public class TPARobot extends IterativeRobot {
         theDriveDirection = theLeftStick.getDirectionDegrees(); // Set the direction to the value of the left stick
         theDriveMagnitude = theLeftStick.getMagnitude();    // Set the magnitude to the value of the left stick
         theDriveRotation = (theRightStick.getX()); // Set the rotation to the value of the right stick
-        //theRobotDrive.mecanumDrive_Polar(.3, 180, 0);
+        //theRobotDrive.TPAMecanumDrive_Polar(.3, 180, 0);
         if (DEBUG == true){ 
         System.out.println("The drive rotation in degrees" + theDriveRotation);
         System.out.println("The drive magnitude is" + theDriveMagnitude);
         System.out.println("The drive direction is" + theDriveDirection);
         }
+        //If the left trigger is pressed once,flips direction and rotation,and flips
+        //back with a second press.
         if (!change(theLeftStick)){
             theRobotDrive.TPAMecanumDrive_Polar(theDriveMagnitude, theDriveDirection, theDriveRotation);
         }
@@ -253,6 +255,7 @@ public class TPARobot extends IterativeRobot {
             System.out.println("The drive magnitude is" + theDriveMagnitude);
             System.out.println("The drive direction in degrees is" + theDriveDirection);
         }
+        //Calculates the multipliers to adjust the speed of each wheel
         theRobotDrive.multiplierCalculator(theFrontLeftEncoder.getRate(), theFrontRightEncoder.getRate(), theRearLeftEncoder.getRate(), theRearRightEncoder.getRate());
     }
 
