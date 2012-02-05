@@ -21,6 +21,8 @@ import edu.wpi.first.wpilibj.camera.AxisCamera;
 public class TPARobot extends IterativeRobot {
     static final boolean DEBUG = true;              // Debug Trigger
     static final boolean CAMERA = false;            // Camera Trigger
+    static boolean buttonPressable = true;          // Flag for backwards driving 
+    static boolean flip = false;                    // If the direction and rotation are already flipped.
     AxisCamera theAxisCamera;                       // The camera
     DriverStationLCD theDriverStationLCD;           // Object representing the driver station   
     // Drive mode selection
@@ -45,11 +47,11 @@ public class TPARobot extends IterativeRobot {
     double theDriveMagnitude;                       // Speed the robot will move at
     double theDriveRotation;                        // Value the robot will rotate
 
-    double afls =0;
-    double afrs =0;
-    double arls =0;
-    double arrs =0;
-    int numberCollected=0;
+    double theSumFrontLeftSpeed =0;
+    double theSumFrontRightSpeed =0;
+    double theSumRearLeftSpeed =0;
+    double theSumRearRightSpeed =0;
+    int theNumberCollected=0;
 
 
    
@@ -234,7 +236,7 @@ public class TPARobot extends IterativeRobot {
         System.out.println("The drive direction is" + theDriveDirection);
         }
         if (!change(theLeftStick)){
-            theRobotDrive.mecanumDrive_Polar(theDriveMagnitude, theDriveDirection, theDriveRotation);
+            theRobotDrive.TPAMecanumDrive_Polar(theDriveMagnitude, theDriveDirection, theDriveRotation);
         }
         else if (change(theLeftStick)){
             if (theDriveDirection > 0){
@@ -244,17 +246,17 @@ public class TPARobot extends IterativeRobot {
                 theDriveDirection = 180 + theDriveDirection;
             }
             theDriveRotation = -theDriveRotation;
-            theRobotDrive.mecanumDrive_Polar(theDriveMagnitude, theDriveDirection, theDriveRotation);
+            theRobotDrive.TPAMecanumDrive_Polar(theDriveMagnitude, theDriveDirection, theDriveRotation);
         }
         if (DEBUG == true){
             System.out.println("The drive rotation is" + theDriveRotation);
             System.out.println("The drive magnitude is" + theDriveMagnitude);
             System.out.println("The drive direction in degrees is" + theDriveDirection);
-        }    
+        }
+        theRobotDrive.multiplierCalculator(theFrontLeftEncoder.getRate(), theFrontRightEncoder.getRate(), theRearLeftEncoder.getRate(), theRearRightEncoder.getRate());
     }
 
     /*--------------------------------------------------------------------------*/
-
                     
     
     /*--------------------------------------------------------------------------*/
@@ -269,7 +271,7 @@ public class TPARobot extends IterativeRobot {
      */    
     public void setMaxSpeed(){
         
-        theMaxSpeed = (theLeftStick.getZ() + 1.0)/2.0;
+        theMaxSpeed = (theLeftStick.getZ() - 1.0)/(-2.0);
         theRobotDrive.setMaxSpeed(theMaxSpeed); // sets the multiplier
     }
     /*--------------------------------------------------------------------------*/
@@ -277,62 +279,52 @@ public class TPARobot extends IterativeRobot {
 
     /*--------------------------------------------------------------------------*/
     /*
-     * Author:  
-     * Date:    
-     * Purpose: 
-     * Inputs:  
-     * Outputs: 
+     * Author:  Daniel Hughes
+     * Date:    1/29/12
+     * Purpose: Display the average speed output from the encoders.
+     * Inputs:  None
+     * Outputs: None
      */    
     
     /*--------------------------------------------------------------------------*/
 public void displaySpeed(){
     
-    double tfl = theFrontLeftEncoder.getRate();
-    double trl = theRearLeftEncoder.getRate();
-    double tfr = theFrontRightEncoder.getRate();
-    double trr = theRearRightEncoder.getRate();
+    double theFrontLeftSpeed = theFrontLeftEncoder.getRate();
+    double theRearLeftSpeed = theRearLeftEncoder.getRate();
+    double theFrontRightSpeed = theFrontRightEncoder.getRate();
+    double theRearRightSpeed = theRearRightEncoder.getRate();
     
-    afls += tfl;
-    arls += trl;
-    afrs += tfr;
-    arrs += trr;
-    numberCollected++;
+    theSumFrontLeftSpeed += theFrontLeftSpeed;
+    theSumRearLeftSpeed += theRearLeftSpeed;
+    theSumFrontRightSpeed += theFrontRightSpeed;
+    theSumRearRightSpeed += theRearRightSpeed;
+    theNumberCollected++;
+        
+    if(theNumberCollected == 100){
+        theNumberCollected =0;
+        String theAverageFrontLeftSpeed = "FLS: " + theSumFrontLeftSpeed/100;
+        String theAverageRearLeftSpeed = "RLS: " + theSumRearLeftSpeed/100;
+        String theAverageFrontRightSpeed = "FRS: " + theSumFrontRightSpeed/100;
+        String theAverageRearRightSpeed =  "RRS: " + theSumRearRightSpeed/100; 
     
-    if(numberCollected == 100){
-        numberCollected =0;
-        String print1 = "FLS: " + afls/100;
-        String print2 = "RLS: " + arls/100;
-        String print3 = "FRS: " + afrs/100;
-        String print4 = "RRS: " + arrs/100;
-    
-        theDriverStationLCD.println(DriverStationLCD.Line.kMain6, 1 , print1 );
-        theDriverStationLCD.println(DriverStationLCD.Line.kUser2, 1 , print2 );
-        theDriverStationLCD.println(DriverStationLCD.Line.kUser3, 1 , print3 );
-        theDriverStationLCD.println(DriverStationLCD.Line.kUser4, 1 , print4 );
+        theDriverStationLCD.println(DriverStationLCD.Line.kMain6, 1 , theAverageFrontLeftSpeed );
+        theDriverStationLCD.println(DriverStationLCD.Line.kUser2, 1 , theAverageRearLeftSpeed );
+        theDriverStationLCD.println(DriverStationLCD.Line.kUser3, 1 , theAverageFrontRightSpeed );
+        theDriverStationLCD.println(DriverStationLCD.Line.kUser4, 1 , theAverageRearRightSpeed );
         theDriverStationLCD.updateLCD();
         
-        afls=0;
-        arls=0;
-        afrs=0;
-        arrs=0;
-    }
+        theSumFrontLeftSpeed=0;
+        theSumRearLeftSpeed=0;
+        theSumFrontRightSpeed=0;
+        theSumRearRightSpeed=0;
+    } 
    
     
     
 }
     
     /*--------------------------------------------------------------------------*/
-    
-    /*--------------------------------------------------------------------------*/
-    /*
-     * Author:  Sumbhav Sethia
-     * Date:    
-     * Purpose: 
-     * Inputs:  
-     * Outputs: 
-     */    
-    
-    /*--------------------------------------------------------------------------*/
+
 
  /*--------------------------------------------------------------------------*/
     /*
@@ -344,8 +336,7 @@ public void displaySpeed(){
      * Outputs: the direction and the rotation opposite of the original.
      */  
     
-    static boolean buttonPressable = true;
-    static boolean flip = false;// if the direction and rotation are already flipped.
+    
     
     public boolean change(Joystick aStick){
         if (buttonPressable  && aStick.getRawButton(1)){
@@ -357,7 +348,4 @@ public void displaySpeed(){
         }
         return flip;
     }
-    /*--------------------------------------------------------------------------*/
-
-
 }
