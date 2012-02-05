@@ -299,10 +299,11 @@ public class TPARobot extends IterativeRobot {
         System.out.println("The drive magnitude is" + theDriveMagnitude);
         System.out.println("The drive direction is" + theDriveDirection);
         }
-        if (!driveBackwards(theLeftStick)){
+        if (!driveBackwards(theLeftStick)){ // If the robot is driving forwards, feed it normal values
             theRobotDrive.mecanumDrive_Polar(theDriveMagnitude, theDriveDirection, theDriveRotation);
         }
-        else if (driveBackwards(theLeftStick)){
+        else if (driveBackwards(theLeftStick)){ // If the robot is driving backwards, edit driving values
+            // Ask Andrew what this does
             if (theDriveDirection > 0){
                 theDriveDirection = theDriveDirection - 180;
             }
@@ -420,11 +421,11 @@ public class TPARobot extends IterativeRobot {
      */    
     
     public void runConveyor(Joystick aStick, double aSpeed){
-        if(shoot6ButtonPressable && aStick.getRawButton(6)){
+        if(shoot6ButtonPressable && aStick.getRawButton(6)){ // Toggle conveyor if the button is pressed
             flipBoolean(conveyorMoving);
             shoot6ButtonPressable = false;
         }
-        else{
+        if(!aStick.getRawButton(6)){ // On button release, allow it to be pressed again
             shoot6ButtonPressable = true;
         }
         theConveyorMotor.set(aSpeed);
@@ -506,25 +507,28 @@ public class TPARobot extends IterativeRobot {
      */    
     
     public void runUltrasonicSensor(Joystick aStick, TPAUltrasonicAnalogSensor aSensor){
+        // If statements enables button toggle
         if (shoot8ButtonPressable && aStick.getRawButton(8)){
             ultrasonicSensorOn = flipBoolean(ultrasonicSensorOn);
             if(DEBUG == true){
-                theDriverStationLCD.println(DriverStationLCD.Line.kUser2, 1 , "RunUltrasonicSensor recognizes button 8 press" );
                 System.out.println("RunUltrasonicSensor recognizes button 8 press");
             }
             shoot8ButtonPressable = false;
         }
+        // Still part of button toggle
         if (!shoot8ButtonPressable && !aStick.getRawButton(8)){
             shoot8ButtonPressable = true;
-            theDriverStationLCD.println(DriverStationLCD.Line.kUser2, 1 , "In else statement" );
             System.out.println("In else statement");
             
         }
+        // Collect distances if the ultrasonic sensor is on
         if (ultrasonicSensorOn == true){
             aSensor.enable();
+            // Read in distance and add to an accumulator
             theDistance = aSensor.getDistance();
             theAccumulatedDistance = theAccumulatedDistance + theDistance;
             theDistancesCollected = theDistancesCollected + 1;
+            // If enough distances have been collected, print the average value out and restart
             if (theDistancesCollected == theAveragingValue){
                 theAveragedDistance = theAccumulatedDistance/theDistancesCollected;
                 theDriverStationLCD.println(DriverStationLCD.Line.kUser6,1, "" + theAveragedDistance);
@@ -532,7 +536,6 @@ public class TPARobot extends IterativeRobot {
                 theDistancesCollected = 0;
             }
             if(DEBUG == true){
-                theDriverStationLCD.println(DriverStationLCD.Line.kUser4, 1 , "Sensor Enabled " );
                 System.out.println("Sensor Enabled");
             }
         }
@@ -540,7 +543,6 @@ public class TPARobot extends IterativeRobot {
             aSensor.disable();
             theDriverStationLCD.println(DriverStationLCD.Line.kUser6,1, "Sensor not Enabled ");
             if(DEBUG == true){
-                theDriverStationLCD.println(DriverStationLCD.Line.kUser4, 1 , "Sensor Disabled" );
                 System.out.println("Sensor Disabled");
             }
         }
