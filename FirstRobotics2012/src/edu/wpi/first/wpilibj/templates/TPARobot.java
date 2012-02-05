@@ -47,11 +47,11 @@ public class TPARobot extends IterativeRobot {
     double theDriveMagnitude;                       // Speed the robot will move at
     double theDriveRotation;                        // Value the robot will rotate
 
-    double afls =0;
-    double afrs =0;
-    double arls =0;
-    double arrs =0;
-    int numberCollected=0;
+    double theSumFrontLeftSpeed =0;
+    double theSumFrontRightSpeed =0;
+    double theSumRearLeftSpeed =0;
+    double theSumRearRightSpeed =0;
+    int theNumberCollected=0;
 
 
    
@@ -288,34 +288,34 @@ public class TPARobot extends IterativeRobot {
     /*--------------------------------------------------------------------------*/
 public void displaySpeed(){
     
-    double tfl = theFrontLeftEncoder.getRate();
-    double trl = theRearLeftEncoder.getRate();
-    double tfr = theFrontRightEncoder.getRate();
-    double trr = theRearRightEncoder.getRate();
+    double theFrontLeftSpeed = theFrontLeftEncoder.getRate();
+    double theRearLeftSpeed = theRearLeftEncoder.getRate();
+    double theFrontRightSpeed = theFrontRightEncoder.getRate();
+    double theRearRightSpeed = theRearRightEncoder.getRate();
     
-    afls += tfl;
-    arls += trl;
-    afrs += tfr;
-    arrs += trr;
-    numberCollected++;
+    theSumFrontLeftSpeed += theFrontLeftSpeed;
+    theSumRearLeftSpeed += theRearLeftSpeed;
+    theSumFrontRightSpeed += theFrontRightSpeed;
+    theSumRearRightSpeed += theRearRightSpeed;
+    theNumberCollected++;
         
-    if(numberCollected == 100){
-        numberCollected =0;
-        String print1 = "FLS: " + afls/100;
-        String print2 = "RLS: " + arls/100;
-        String print3 = "FRS: " + afrs/100;
-        String print4 = "RRS: " + arrs/100; 
+    if(theNumberCollected == 100){
+        theNumberCollected =0;
+        String theAverageFrontLeftSpeed = "FLS: " + theSumFrontLeftSpeed/100;
+        String theAverageRearLeftSpeed = "RLS: " + theSumRearLeftSpeed/100;
+        String theAverageFrontRightSpeed = "FRS: " + theSumFrontRightSpeed/100;
+        String theAverageRearRightSpeed = "RRS: " + theSumRearRightSpeed/100; 
     
-        theDriverStationLCD.println(DriverStationLCD.Line.kMain6, 1 , print1 );
-        theDriverStationLCD.println(DriverStationLCD.Line.kUser2, 1 , print2 );
-        theDriverStationLCD.println(DriverStationLCD.Line.kUser3, 1 , print3 );
-        theDriverStationLCD.println(DriverStationLCD.Line.kUser4, 1 , print4 );
+        theDriverStationLCD.println(DriverStationLCD.Line.kMain6, 1 , theAverageFrontLeftSpeed );
+        theDriverStationLCD.println(DriverStationLCD.Line.kUser2, 1 , theAverageRearLeftSpeed );
+        theDriverStationLCD.println(DriverStationLCD.Line.kUser3, 1 , theAverageFrontRightSpeed );
+        theDriverStationLCD.println(DriverStationLCD.Line.kUser4, 1 , theAverageRearRightSpeed );
         theDriverStationLCD.updateLCD();
         
-        afls=0;
-        arls=0;
-        afrs=0;
-        arrs=0;
+        theSumFrontLeftSpeed=0;
+        theSumRearLeftSpeed=0;
+        theSumFrontRightSpeed=0;
+        theSumRearRightSpeed=0;
     } 
    
     
