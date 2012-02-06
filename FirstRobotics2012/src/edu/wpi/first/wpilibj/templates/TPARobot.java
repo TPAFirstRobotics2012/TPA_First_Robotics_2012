@@ -23,12 +23,28 @@ public class TPARobot extends IterativeRobot {
     static final boolean DEBUG = true;              // Debug Trigger
     static final boolean CAMERA = false;            // Camera Trigger
     static final double STOP_VALUE = 0.1;           // Value sent to each motor when the robot is stopping
-    static final double CONVEYOR_SPEED = 0.5;       // THe speed the conveyor motor will be set to move
-    static boolean shoot2ButtonPressable = true;    // Flag for pressability of button 3 on the shooting joystick
+    static final double CONVEYOR_SPEED = 0.5;       // The speed the conveyor motor will be set to move
+    static final double SHOOTING_SPEED_4 = 0.1;     // The speed of the shooter controlled by button 4
+    static final double SHOOTING_SPEED_3 = 0.5;     // The speed of the shooter controlled by button 3
+    static final double SHOOTING_SPEED_5 = 1.0;     // The speed of the shooter controlled by button 5
+    static final int theAveragingValue = 10;
+    double theShootingSpeed;                        // The actual speed the shooter is running
+    static boolean shoot8ButtonPressable = true;    // Flag for pressablilty of button 8 on the shooting joystick
+    static boolean shoot6ButtonPressable = true;    // Flag for pressability of button 6 on the shooting joystick
+    static boolean shoot4ButtonPressable = true;    // Flag for pressability of button 4 on the shooting joystick 
+    static boolean shoot3ButtonPressable = true;    // Flag for pressability of button 3 on the shooting joystick 
+    static boolean shoot5ButtonPressable = true;    // Flag for pressability of button 5 on the shooting joystick
     static boolean left1ButtonPressable = true;     // Flag for pressablity of the trigger on the left joystick
     static boolean flipDriveDirection = false;      // Determines whether the robot is moving forward or backward
     static boolean conveyorMoving = true;           // Determines whether the conveyor is moving
+    static boolean ultrasonicSensorOn = false;      // Determines whether the ultrasonic sensor is on
+    static double theAccumulatedDistance;
+    static int theDistancesCollected;
+    static double theAveragedDistance;
+    static double theDistance;                      // The distance returned by the ultrasonic sensor
     Jaguar theConveyorMotor;                        // The motor on the conveyor belt
+    Jaguar theTopShootingMotor;                     // The shooting motor on the top
+    Jaguar theBottomShootingMotor;                  // The shooting motor on the bottom
     AxisCamera theAxisCamera;                       // The camera
     DriverStationLCD theDriverStationLCD;           // Object representing the driver station   
     public double theMaxSpeed;                      // Multiplier for speed, determined by Z-Axis on left stick
@@ -48,6 +64,7 @@ public class TPARobot extends IterativeRobot {
     double theDriveMagnitude;                       // Speed the robot will move at
     double theDriveRotation;                        // Value the robot will rotate
     Compressor theCompressor;                       // The air compressor
+    TPAUltrasonicAnalogSensor theUltrasonicSensor;  // The ultrasonic sensor
 
     double afls =0;
     double afrs =0;
@@ -70,9 +87,10 @@ public class TPARobot extends IterativeRobot {
      */
     public void robotInit() {
                
-        // Define joysticks being used at USB port #1 and USB port #2 on the Drivers Station
+        // Define joysticks being used at USB port #1, USB port #2, and USB port #3 on the Drivers Station
 	theRightStick = new Joystick(1);
 	theLeftStick = new Joystick(2);
+        theShootingStick = new Joystick(3);
         if (DEBUG == true){
            System.out.println("The Joysticks constructed successfully"); 
         }
@@ -102,19 +120,32 @@ public class TPARobot extends IterativeRobot {
             System.out.println("The Conveyor Motor constructed successfully");
         }
         
+        // Intialize the two shooting motors at ports 6 and 7
+        theTopShootingMotor = new Jaguar(6);
+        theBottomShootingMotor = new Jaguar (7);
+        if (DEBUG == true){
+            System.out.println("The Shooting Motors constructed successfully");
+        }
+        
+        // Initialize the Ultrasonic sensor at analog port 1 and digital port 14
+        theUltrasonicSensor = new TPAUltrasonicAnalogSensor(14,1);
+        if (DEBUG == true){
+            System.out.println("The ultrasonic sensor constructed successfully");
+        }
+        
         //Initialize the DriverStationLCD
         theDriverStationLCD = DriverStationLCD.getInstance();
         if (DEBUG == true) {
             System.out.println("DriverStationLCD initialized");
         }
-        
+        /*
         //Initialize the compressor in ports 6 and 6
         theCompressor = new Compressor (6,6);
         if (DEBUG == true){
             System.out.println("The Compressor constructed successfully");
         }
         theCompressor.start(); //Instantly turn the compressor on
-        
+        */
         //Initialize the AxisCamera
         if (CAMERA == true){
             theAxisCamera = AxisCamera.getInstance(); 
@@ -202,7 +233,7 @@ public class TPARobot extends IterativeRobot {
         
         //Get the image from the Axis Camera
         DriverStationLCD.getInstance().updateLCD();
-        if(DEBUG) {
+        if(DEBUG == true) {
             System.out.println("getCameraImage called");
         }
 
@@ -212,9 +243,31 @@ public class TPARobot extends IterativeRobot {
             System.out.println("driveRobot called");
         }
         
+        // Run the conveyor belt
+        runConveyor(theShootingStick, CONVEYOR_SPEED);
+        if(DEBUG == true){
+            System.out.println("runConveyor called");
+        }
+        
+        // Display the speed of each wheel
         displaySpeed();
-        System.out.println("displaySpeed called");
-/*
+        if (DEBUG == true){
+            System.out.println("displaySpeed called");
+        }
+        
+        // Run the shooter
+        runShooter(determineShootingSpeed(theShootingStick));
+        if (DEBUG == true){
+            System.out.println("runShooter called");
+        }
+        
+        // Run the Ultrasonic sensor
+        runUltrasonicSensor(theShootingStick, theUltrasonicSensor);
+        if (DEBUG == true){
+            System.out.println("runUltrasonicSensor called");
+        }
+        
+/*d
         // Brake the robot if no joysick input.
         brakeOnNeutral();
         if(DEBUG == true) {
@@ -246,10 +299,11 @@ public class TPARobot extends IterativeRobot {
         System.out.println("The drive magnitude is" + theDriveMagnitude);
         System.out.println("The drive direction is" + theDriveDirection);
         }
-        if (!driveBackwards(theLeftStick)){
+        if (!driveBackwards(theLeftStick)){ // If the robot is driving forwards, feed it normal values
             theRobotDrive.mecanumDrive_Polar(theDriveMagnitude, theDriveDirection, theDriveRotation);
         }
-        else if (driveBackwards(theLeftStick)){
+        else if (driveBackwards(theLeftStick)){ // If the robot is driving backwards, edit driving values
+            // Ask Andrew what this does
             if (theDriveDirection > 0){
                 theDriveDirection = theDriveDirection - 180;
             }
@@ -317,11 +371,11 @@ public class TPARobot extends IterativeRobot {
             String print3 = "FRS: " + afrs/100;
             String print4 = "RRS: " + arrs/100; 
 
-            theDriverStationLCD.println(DriverStationLCD.Line.kMain6, 1 , print1 );
+          /*  theDriverStationLCD.println(DriverStationLCD.Line.kMain6, 1 , print1 );
             theDriverStationLCD.println(DriverStationLCD.Line.kUser2, 1 , print2 );
             theDriverStationLCD.println(DriverStationLCD.Line.kUser3, 1 , print3 );
             theDriverStationLCD.println(DriverStationLCD.Line.kUser4, 1 , print4 );
-            theDriverStationLCD.updateLCD();
+            theDriverStationLCD.updateLCD(); */
 
             afls=0;
             arls=0;
@@ -367,12 +421,12 @@ public class TPARobot extends IterativeRobot {
      */    
     
     public void runConveyor(Joystick aStick, double aSpeed){
-        if(shoot2ButtonPressable && aStick.getRawButton(2)){
+        if(shoot6ButtonPressable && aStick.getRawButton(6)){ // Toggle conveyor if the button is pressed
             flipBoolean(conveyorMoving);
-            shoot2ButtonPressable = false;
+            shoot6ButtonPressable = false;
         }
-        else{
-            shoot2ButtonPressable = true;
+        if(!aStick.getRawButton(6)){ // On button release, allow it to be pressed again
+            shoot6ButtonPressable = true;
         }
         theConveyorMotor.set(aSpeed);
     }
@@ -398,6 +452,104 @@ public class TPARobot extends IterativeRobot {
     }
     /*--------------------------------------------------------------------------*/
     
+    
+    /*--------------------------------------------------------------------------*/
+    /*
+     * Author:  Marissa Beene
+     * Date:    2/4/12
+     * Purpose: To run a shooter with two motors controlling four wheels. One motor
+     *          will run counterclockwise, the other will run clockwise.
+     * Inputs:  double aSpeed - the speed the motors will run in
+     * Outputs: None
+     */    
+    
+    public void runShooter(double aSpeed){
+        theTopShootingMotor.set(aSpeed);
+        theBottomShootingMotor.set(-aSpeed);
+    }    
+    /*--------------------------------------------------------------------------*/
+
+    
+    /*--------------------------------------------------------------------------*/
+    /*
+     * Author:  Marissa Beene
+     * Date:    2/4/12
+     * Purpose: To determine the speed at which the wheels on the shooter will run.
+     *          The speeds are controlled by buttons 4, 3, and 5 on the Joystick.
+     * Inputs:  Joystick aStick - the joystick which controls the speed
+     * Outputs: double theShootingSpeed - the speed the shooter will run at
+     */    
+    
+    public double determineShootingSpeed(Joystick aStick){
+        if(shoot4ButtonPressable && aStick.getRawButton(4)){
+            theShootingSpeed = SHOOTING_SPEED_4;
+        }
+        if(shoot3ButtonPressable && aStick.getRawButton(3)){
+            theShootingSpeed = SHOOTING_SPEED_3;
+        }
+        if(shoot5ButtonPressable && aStick.getRawButton(5)){
+            theShootingSpeed = SHOOTING_SPEED_5;
+        }
+        return theShootingSpeed;
+    }
+    /*--------------------------------------------------------------------------*/
+        
+    
+    /*--------------------------------------------------------------------------*/
+    /*
+     * Author:  Marissa Beene
+     * Date:    2/4/2012
+     * Purpose: To run the ultrasonic sensor. A press of button 8 toggles it on 
+     *          and off.
+     * Inputs:  Joystick aStick - the Joystick controlling the analog sensor
+     *          TPAUltrasonicAnalogSensor aSensor - the ultrasonic sensor
+     * Outputs: 
+     */    
+    
+    public void runUltrasonicSensor(Joystick aStick, TPAUltrasonicAnalogSensor aSensor){
+        // If statements enables button toggle
+        if (shoot8ButtonPressable && aStick.getRawButton(8)){
+            ultrasonicSensorOn = flipBoolean(ultrasonicSensorOn);
+            if(DEBUG == true){
+                System.out.println("RunUltrasonicSensor recognizes button 8 press");
+            }
+            shoot8ButtonPressable = false;
+        }
+        // Still part of button toggle
+        if (!shoot8ButtonPressable && !aStick.getRawButton(8)){
+            shoot8ButtonPressable = true;
+            System.out.println("In else statement");
+            
+        }
+        // Collect distances if the ultrasonic sensor is on
+        if (ultrasonicSensorOn == true){
+            aSensor.enable();
+            // Read in distance and add to an accumulator
+            theDistance = aSensor.getDistance();
+            theAccumulatedDistance = theAccumulatedDistance + theDistance;
+            theDistancesCollected = theDistancesCollected + 1;
+            // If enough distances have been collected, print the average value out and restart
+            if (theDistancesCollected == theAveragingValue){
+                theAveragedDistance = theAccumulatedDistance/theDistancesCollected;
+                theDriverStationLCD.println(DriverStationLCD.Line.kUser6,1, "" + theAveragedDistance);
+                theAccumulatedDistance = 0;
+                theDistancesCollected = 0;
+            }
+            if(DEBUG == true){
+                System.out.println("Sensor Enabled");
+            }
+        }
+        else{
+            aSensor.disable();
+            theDriverStationLCD.println(DriverStationLCD.Line.kUser6,1, "Sensor not Enabled ");
+            if(DEBUG == true){
+                System.out.println("Sensor Disabled");
+            }
+        }
+    }
+    
+    /*--------------------------------------------------------------------------*/
+    
     /*--------------------------------------------------------------------------*/
     /*
      * Author:  
@@ -408,4 +560,5 @@ public class TPARobot extends IterativeRobot {
      */    
     
     /*--------------------------------------------------------------------------*/
+    
 }
