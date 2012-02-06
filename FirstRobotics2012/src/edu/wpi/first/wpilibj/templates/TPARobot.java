@@ -63,12 +63,8 @@ public class TPARobot extends IterativeRobot {
     double theDriveDirection;                       // Direction the robot will move
     double theDriveMagnitude;                       // Speed the robot will move at
     double theDriveRotation;                        // Value the robot will rotate
-<<<<<<< HEAD
     Compressor theCompressor;                       // The air compressor
     TPAUltrasonicAnalogSensor theUltrasonicSensor;  // The ultrasonic sensor
-=======
-    TPAUltrasonicAnalogSensor theTPAUltrasonic;    // The ultrasonic sensor
->>>>>>> fccb3ca2fc39f5025ec4547ea4203b1589eacd7e
 
     double afls =0;
     double afrs =0;
@@ -172,10 +168,7 @@ public class TPARobot extends IterativeRobot {
         if (DEBUG == true){
             System.out.println("The robot set to not move");
         }
-        
-        // Initialize the ultrasonic sensor
-        theTPAUltrasonic = new TPAUltrasonicAnalogSensor(1,1);
-        
+                
         if (DEBUG == true){
         System.out.println("RobotInit() completed.\n");
         }
@@ -258,7 +251,6 @@ public class TPARobot extends IterativeRobot {
         
         // Display the speed of each wheel
         displaySpeed();
-<<<<<<< HEAD
         if (DEBUG == true){
             System.out.println("displaySpeed called");
         }
@@ -274,23 +266,15 @@ public class TPARobot extends IterativeRobot {
         if (DEBUG == true){
             System.out.println("runUltrasonicSensor called");
         }
-        
-/*d
-=======
-        System.out.println("displaySpeed called");
-/*
->>>>>>> fccb3ca2fc39f5025ec4547ea4203b1589eacd7e
+
         // Brake the robot if no joysick input.
-        brakeOnNeutral();
+/*        brakeOnNeutral();
         if(DEBUG == true) {
             System.out.println("brakeOnNeutral called");
-        }
-*/       
+        } */
+       
         // Display the distance from ultrasonic sensor (for testing)
-        theTPAUltrasonic.enable();
-        System.out.println("Distance from sensor: " + theTPAUltrasonic.getDistance());
-        theDriverStationLCD.println(DriverStationLCD.Line.kUser5, 1, "Distance from sensor: " + theTPAUltrasonic.getDistance());
-    }
+       }
     /*--------------------------------------------------------------------------*/
     
     
@@ -542,12 +526,13 @@ public class TPARobot extends IterativeRobot {
             aSensor.enable();
             // Read in distance and add to an accumulator
             theDistance = aSensor.getDistance();
-            theAccumulatedDistance = theAccumulatedDistance + theDistance;
-            theDistancesCollected = theDistancesCollected + 1;
+            theAccumulatedDistance += theDistance;
+            theDistancesCollected++;
             // If enough distances have been collected, print the average value out and restart
             if (theDistancesCollected == theAveragingValue){
                 theAveragedDistance = theAccumulatedDistance/theDistancesCollected;
-                theDriverStationLCD.println(DriverStationLCD.Line.kUser6,1, "" + theAveragedDistance);
+                theDriverStationLCD.println(DriverStationLCD.Line.kUser2,1, "" + theAveragedDistance);
+                theDriverStationLCD.updateLCD();
                 theAccumulatedDistance = 0;
                 theDistancesCollected = 0;
             }
@@ -557,7 +542,7 @@ public class TPARobot extends IterativeRobot {
         }
         else{
             aSensor.disable();
-            theDriverStationLCD.println(DriverStationLCD.Line.kUser6,1, "Sensor not Enabled ");
+            theDriverStationLCD.println(DriverStationLCD.Line.kUser6,1, "Sensor not Enabled");
             if(DEBUG == true){
                 System.out.println("Sensor Disabled");
             }

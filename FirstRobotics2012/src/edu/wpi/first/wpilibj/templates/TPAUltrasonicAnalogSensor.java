@@ -35,18 +35,18 @@ public class TPAUltrasonicAnalogSensor {
     }
     
     public void enable(){
-        theDigitalOutput.set(true);
+        theDigitalOutput.set(true);     // Enable the ultrasonic sensor
     }
     
     public void disable(){
-        theDigitalOutput.set(false);
+        theDigitalOutput.set(false);    // Disable the ultrasonic sensor
     }
     
-    public void refreshScaling(){
+    public void refreshScaling(){       // Refresh the scaling for the distance
         theScaling = thePower.getVoltage()/512;
     }
     
-    public double getDistance(){
+    public double getDistance(){        // Calculate the distance an object is from the sensor
         aVoltage = theAnalogOutput.getVoltage();
         theDistance = aVoltage/theScaling;
         return theDistance;        
