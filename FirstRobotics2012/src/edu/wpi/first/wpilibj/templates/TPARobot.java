@@ -63,8 +63,12 @@ public class TPARobot extends IterativeRobot {
     double theDriveDirection;                       // Direction the robot will move
     double theDriveMagnitude;                       // Speed the robot will move at
     double theDriveRotation;                        // Value the robot will rotate
+<<<<<<< HEAD
     Compressor theCompressor;                       // The air compressor
     TPAUltrasonicAnalogSensor theUltrasonicSensor;  // The ultrasonic sensor
+=======
+    TPAUltrasonicAnalogSensor theTPAUltrasonic;    // The ultrasonic sensor
+>>>>>>> fccb3ca2fc39f5025ec4547ea4203b1589eacd7e
 
     double afls =0;
     double afrs =0;
@@ -169,6 +173,9 @@ public class TPARobot extends IterativeRobot {
             System.out.println("The robot set to not move");
         }
         
+        // Initialize the ultrasonic sensor
+        theTPAUltrasonic = new TPAUltrasonicAnalogSensor(1,1);
+        
         if (DEBUG == true){
         System.out.println("RobotInit() completed.\n");
         }
@@ -251,6 +258,7 @@ public class TPARobot extends IterativeRobot {
         
         // Display the speed of each wheel
         displaySpeed();
+<<<<<<< HEAD
         if (DEBUG == true){
             System.out.println("displaySpeed called");
         }
@@ -268,12 +276,20 @@ public class TPARobot extends IterativeRobot {
         }
         
 /*d
+=======
+        System.out.println("displaySpeed called");
+/*
+>>>>>>> fccb3ca2fc39f5025ec4547ea4203b1589eacd7e
         // Brake the robot if no joysick input.
         brakeOnNeutral();
         if(DEBUG == true) {
             System.out.println("brakeOnNeutral called");
         }
-*/        
+*/       
+        // Display the distance from ultrasonic sensor (for testing)
+        theTPAUltrasonic.enable();
+        System.out.println("Distance from sensor: " + theTPAUltrasonic.getDistance());
+        theDriverStationLCD.println(DriverStationLCD.Line.kUser5, 1, "Distance from sensor: " + theTPAUltrasonic.getDistance());
     }
     /*--------------------------------------------------------------------------*/
     
@@ -343,11 +359,11 @@ public class TPARobot extends IterativeRobot {
 
     /*--------------------------------------------------------------------------*/
     /*
-     * Author:  
-     * Date:    
-     * Purpose: 
-     * Inputs:  
-     * Outputs: 
+     * Author:  Daniel Hughes
+     * Date:    1/29/12
+     * Purpose: Display the average speed output from the encoders.
+     * Inputs:  None
+     * Outputs: None
      */    
     
     /*--------------------------------------------------------------------------*/
