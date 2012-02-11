@@ -46,7 +46,11 @@ public class TPARobot extends IterativeRobot {
     double theDriveDirection;                       // Direction the robot will move
     double theDriveMagnitude;                       // Speed the robot will move at
     double theDriveRotation;                        // Value the robot will rotate
-
+    KinectStick theLeftArm;                         //Your Left Arm
+    KinectStick theRightArm;                        //Your Right Arm
+    double theHybridDriveRotation;
+    double theHybridDriveMagnitude;
+    
     double afls =0;
     double afrs =0;
     double arls =0;
@@ -104,6 +108,12 @@ public class TPARobot extends IterativeRobot {
             System.out.println("DriverStationLCD initialized");
         }
         
+        //Stretches out your arms and gets them ready to work
+            theLeftArm = new KinectStick(1);
+            theRightArm = new KinectStick(2);
+            if (DEBUG == true) {
+                System.out.println("Arms Stretched");
+            }
         //Initialize the AxisCamera
         if (CAMERA == true){
             theAxisCamera = AxisCamera.getInstance(); 
@@ -165,6 +175,10 @@ public class TPARobot extends IterativeRobot {
         Watchdog.getInstance().feed();
         theDriverStationLCD.println(DriverStationLCD.Line.kMain6, 1, "Autonomous Mode Called");
         theDriverStationLCD.updateLCD();    //Displays a message to DriverStationLCD when entering Autonomous mode
+        HybridDrive(theLeftArm, theRightArm);
+        if (DEBUG == true) {
+            System.out.println("Hybrid Drive Called");
+        }
     }
     /*--------------------------------------------------------------------------*/
     
@@ -322,9 +336,7 @@ public void displaySpeed(){
         public void DropBallIntoShooter(Joystick aStick) {
             if(aStick.getRawButton(3)) {        //Throws ball into shooter
                theWedgeUp.set(true);
-               theWedgeDown.set(false);
                theWedgeUp.set(false);
-               theWedgeDown.set(true);
             }
         }
     
@@ -332,14 +344,19 @@ public void displaySpeed(){
 
  /*--------------------------------------------------------------------------*/
     /*
-     * Author:  
-     * Date:    
-     * Purpose: 
-     * Inputs:  
+     * Author:  Sumbhav Sethia
+     * Date:    2/11/2012
+     * Purpose: Hybrid Mode Drive
+     * Inputs:  Two Arms
      * Outputs: 
      */    
     
     /*--------------------------------------------------------------------------*/
-
-
+            public void HybridDrive(KinectStick aLeftArm, KinectStick aRightArm) {
+                theHybridDriveRotation = aLeftArm.getY();
+                theHybridDriveMagnitude = aRightArm.getY();
+                
+                theRobotDrive.mecanumDrive_Polar(theDriveMagnitude, 0, theDriveRotation );
+            }
+  /*---------------------------------------------------------------------------------------*/
 }
