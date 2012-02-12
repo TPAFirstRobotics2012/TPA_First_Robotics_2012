@@ -499,16 +499,16 @@ public class TPARobot extends IterativeRobot {
      * Date:    2/4/2012
      * Purpose: To run the ultrasonic sensor. A press of button 8 toggles it on 
      *          and off.
-     * Inputs:  Joystick aStick - the Joystick controlling the analog sensor
-     *          TPAUltrasonicAnalogSensor aSensor - the ultrasonic sensor
+     * Inputs:  TPAUltrasonicAnalogSensor aSensor - the ultrasonic sensor
      * Outputs: 
-     */    
-
+     */
+    
     public void runUltrasonicSensor(TPAUltrasonicAnalogSensor aSensor){
-        //aSensor.enable();
+        // Read in distance and add to an accumulator
         theDistance = aSensor.getDistance();
         theAccumulatedDistance = theAccumulatedDistance + theDistance;
         theDistancesCollected = theDistancesCollected + 1;
+        // If enough distances have been collected, print the average value out and restart
         if (theDistancesCollected == theAveragingValue){
             theAveragedDistance = theAccumulatedDistance/theDistancesCollected;
             theDriverStationLCD.println(DriverStationLCD.Line.kUser6,1, "" + theAveragedDistance);
