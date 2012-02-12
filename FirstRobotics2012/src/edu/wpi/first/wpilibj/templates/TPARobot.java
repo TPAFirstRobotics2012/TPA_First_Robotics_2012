@@ -46,12 +46,7 @@ public class TPARobot extends IterativeRobot {
     AxisCamera theAxisCamera;                       // The camera
     DriverStationLCD theDriverStationLCD;           // Object representing the driver station   
     public double theMaxSpeed;                      // Multiplier for speed, determined by Z-Axis on left stick
-<<<<<<< HEAD
-=======
-    static final double STOP_VALUE = 0.1;           // Value sent to each motor when the robot is stopping
-   Solenoid theWedgeUp;                             //This Solenoid moves the wedge up and holds the ball in place
-    Solenoid theWedgeDown;                           //This Solenoid moves the wedge down and lets balls fall into the shooter
->>>>>>> 95b9ffaa55dda0797caec7d86e517b3a1a8c200f
+    Solenoid theWedgeUp;                             //This Solenoid moves the wedge up and holds the ball in place
     Encoder theFrontLeftEncoder;                    // The front left E4P
     Encoder theRearLeftEncoder;                     // The rear left E4P
     Encoder theFrontRightEncoder;                   // The front right E4P
@@ -67,7 +62,6 @@ public class TPARobot extends IterativeRobot {
     double theDriveDirection;                       // Direction the robot will move
     double theDriveMagnitude;                       // Speed the robot will move at
     double theDriveRotation;                        // Value the robot will rotate
-<<<<<<< HEAD
     Compressor theCompressor;                       // The air compressor
     TPAUltrasonicAnalogSensor theUltrasonicSensor;  // The ultrasonic sensor
 
@@ -76,22 +70,12 @@ public class TPARobot extends IterativeRobot {
     double theSumRearLeftSpeed =0;
     double theSumRearRightSpeed =0;
     int theNumberCollected=0;
-=======
     KinectStick theLeftArm;                         //Your Left Arm
     KinectStick theRightArm;                        //Your Right Arm
     double theHybridDriveRotation;
     double theHybridDriveMagnitude;
-    
-    double afls =0;
-    double afrs =0;
-    double arls =0;
-    double arrs =0;
-    int numberCollected=0;
->>>>>>> 95b9ffaa55dda0797caec7d86e517b3a1a8c200f
 
-
-   
-    
+       
     /*--------------------------------------------------------------------------*/
     /*
      * Author:  Marissa Beene
@@ -117,12 +101,8 @@ public class TPARobot extends IterativeRobot {
         if (DEBUG == true){
             System.out.println("theRobotDrive constructed successfully");
         }
-<<<<<<< HEAD
-=======
         //Define Solenoids used to move ball into shooter
         theWedgeUp = new Solenoid(1);
-        theWedgeDown = new Solenoid(2);
->>>>>>> 95b9ffaa55dda0797caec7d86e517b3a1a8c200f
 
         //Defines four E4P Motion Sensors at ports 1,2,3,4,5,6,7, and 8
         theFrontLeftEncoder = new Encoder(2,1);
@@ -161,16 +141,6 @@ public class TPARobot extends IterativeRobot {
         if (DEBUG == true) {
             System.out.println("DriverStationLCD initialized");
         }
-<<<<<<< HEAD
-        /*
-        //Initialize the compressor in ports 6 and 6
-        theCompressor = new Compressor (6,6);
-        if (DEBUG == true){
-            System.out.println("The Compressor constructed successfully");
-        }
-        theCompressor.start(); //Instantly turn the compressor on
-        */
-=======
         
         //Stretches out your arms and gets them ready to work
             theLeftArm = new KinectStick(1);
@@ -178,7 +148,6 @@ public class TPARobot extends IterativeRobot {
             if (DEBUG == true) {
                 System.out.println("Arms Stretched");
             }
->>>>>>> 95b9ffaa55dda0797caec7d86e517b3a1a8c200f
         //Initialize the AxisCamera
         if (CAMERA == true){
             theAxisCamera = AxisCamera.getInstance(); 
@@ -288,7 +257,6 @@ public class TPARobot extends IterativeRobot {
         
         // Display the speed of each wheel
         displaySpeed();
-<<<<<<< HEAD
         if (DEBUG == true){
             System.out.println("displaySpeed called");
         }
@@ -305,10 +273,9 @@ public class TPARobot extends IterativeRobot {
             System.out.println("runUltrasonicSensor called");
         }
 
-=======
-        System.out.println("displaySPeed called");
+        System.out.println("displaySpeed called");
         
-        dropBallIntoShooter(theRightStick);
+        dropBallIntoShooter(theShootingStick);
 /*
 >>>>>>> 95b9ffaa55dda0797caec7d86e517b3a1a8c200f
         // Brake the robot if no joysick input.
@@ -548,35 +515,43 @@ public class TPARobot extends IterativeRobot {
     }
     
     /*--------------------------------------------------------------------------*/
-=======
-     * Author:  Sumbhav Sethia
+     /* Author:  Sumbhav Sethia
      * Date:    1/29/2012
      * Purpose: To drop one and only one ball into the shooter mechanism
      * Inputs:  Joystick aStick
      * Outputs: None
      */
+     /*--------------------------------------------------------------------------*/
         public void dropBallIntoShooter(Joystick aStick) {
             if(aStick.getRawButton(3)) {        //Throws ball into shooter
                theWedgeUp.set(true);
                theWedgeUp.set(false);
             }
         }
->>>>>>> 95b9ffaa55dda0797caec7d86e517b3a1a8c200f
     
     /*--------------------------------------------------------------------------*/
     /*
-     * Author:  Sumbhav Sethia
-     * Date:    2/11/2012
+     * Author:  Sumbhav Sethia and Gennaro De Luca
+     * Date:    2/11/2012, 2/12/2012
      * Purpose: Hybrid Mode Drive
      * Inputs:  Two Arms
-     * Outputs: 
+     * Outputs: None
      */    
     
     /*--------------------------------------------------------------------------*/
         public void hybridDrive(KinectStick aLeftArm, KinectStick aRightArm) {
             theHybridDriveRotation = aLeftArm.getY();
             theHybridDriveMagnitude = aRightArm.getY();
-            
+            if(aRightArm.getRawButton(3)) {
+                theWedgeUp.set(true);
+                theWedgeUp.set(false);
+                theDriverStationLCD.println(DriverStationLCD.Line.kUser3, 1, "Button 3 pressed");
+                theDriverStationLCD.updateLCD();
+            }
+            else {
+                theDriverStationLCD.println(DriverStationLCD.Line.kUser3, 1, "                  ");
+                theDriverStationLCD.updateLCD();
+            }
             theRobotDrive.mecanumDrive_Polar(theDriveMagnitude, 0, theDriveRotation );
         }
             
@@ -592,9 +567,4 @@ public class TPARobot extends IterativeRobot {
      */    
     
     /*--------------------------------------------------------------------------*/
-<<<<<<< HEAD
-    
-=======
-
->>>>>>> 95b9ffaa55dda0797caec7d86e517b3a1a8c200f
 }
