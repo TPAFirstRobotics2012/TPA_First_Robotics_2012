@@ -341,11 +341,11 @@ public class TPARobot extends IterativeRobot {
 
     /*--------------------------------------------------------------------------*/
     /*
-     * Author:  
-     * Date:    
-     * Purpose: 
-     * Inputs:  
-     * Outputs: 
+     * Author:  Daniel Hughes
+     * Date:    1/29/12
+     * Purpose: Display the average speed output from the encoders.
+     * Inputs:  None
+     * Outputs: None
      */    
     
     /*--------------------------------------------------------------------------*/
