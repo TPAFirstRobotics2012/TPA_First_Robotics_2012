@@ -297,10 +297,11 @@ public class TPARobot extends IterativeRobot {
         System.out.println("The drive magnitude is" + theDriveMagnitude);
         System.out.println("The drive direction is" + theDriveDirection);
         }
-        if (!driveBackwards(theLeftStick)){
+        if (!driveBackwards(theLeftStick)){ // If the robot is driving forwards, feed it normal values
             theRobotDrive.mecanumDrive_Polar(theDriveMagnitude, theDriveDirection, theDriveRotation);
         }
-        else if (driveBackwards(theLeftStick)){
+        else if (driveBackwards(theLeftStick)){ // If the robot is driving backwards, edit driving values
+            // Ask Andrew what this does
             if (theDriveDirection > 0){
                 theDriveDirection = theDriveDirection - 180;
             }
@@ -418,11 +419,11 @@ public class TPARobot extends IterativeRobot {
      */    
     
     public void runConveyor(Joystick aStick, double aSpeed){
-        if(shoot6ButtonPressable && aStick.getRawButton(6)){
+        if(shoot6ButtonPressable && aStick.getRawButton(6)){ // Toggle conveyor if the button is pressed
             flipBoolean(conveyorMoving);
             shoot6ButtonPressable = false;
         }
-        else{
+        if(!aStick.getRawButton(6)){ // On button release, allow it to be pressed again
             shoot6ButtonPressable = true;
         }
         theConveyorMotor.set(aSpeed);
@@ -502,7 +503,7 @@ public class TPARobot extends IterativeRobot {
      *          TPAUltrasonicAnalogSensor aSensor - the ultrasonic sensor
      * Outputs: 
      */    
-    
+
     public void runUltrasonicSensor(TPAUltrasonicAnalogSensor aSensor){
         //aSensor.enable();
         theDistance = aSensor.getDistance();
