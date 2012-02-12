@@ -18,12 +18,20 @@ public class TPAUltrasonicAnalogSensor {
     double aVoltage;
     double theScaling;
     double theDistance;
+    static boolean theDigitalConnected;
     
+    TPAUltrasonicAnalogSensor(int aAnalogChannel) {
+        theAnalogOutput = new AnalogChannel (aAnalogChannel);
+        theScaling = 5.0/512;
+        theDistance = 0;
+        theDigitalConnected = false;
+    }
     TPAUltrasonicAnalogSensor(int aDigitalChannel, int aAnalogChannel){
         theDigitalOutput = new DigitalOutput (aDigitalChannel);
         theAnalogOutput = new AnalogChannel (aAnalogChannel);
         theScaling = 5.0/512;
         theDistance = 0;
+        theDigitalConnected = true;
     }
     TPAUltrasonicAnalogSensor(int aDigitalChannel, int aAnalogChannel, int aPowerChannel){
       
@@ -32,14 +40,19 @@ public class TPAUltrasonicAnalogSensor {
         thePower = new AnalogChannel (aPowerChannel);
         theScaling = thePower.getVoltage()/512;
         theDistance = 0;
+        theDigitalConnected = true;
     }
     
     public void enable(){
-        theDigitalOutput.set(true);
+        if(theDigitalConnected == true) {
+            theDigitalOutput.set(true);
+        }
     }
     
     public void disable(){
-        theDigitalOutput.set(false);
+        if(theDigitalConnected == true) {
+            theDigitalOutput.set(false);
+        }
     }
     
     public void refreshScaling(){
