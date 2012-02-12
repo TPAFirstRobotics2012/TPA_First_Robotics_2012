@@ -297,10 +297,11 @@ public class TPARobot extends IterativeRobot {
         System.out.println("The drive magnitude is" + theDriveMagnitude);
         System.out.println("The drive direction is" + theDriveDirection);
         }
-        if (!driveBackwards(theLeftStick)){
+        if (!driveBackwards(theLeftStick)){ // If the robot is driving forwards, feed it normal values
             theRobotDrive.mecanumDrive_Polar(theDriveMagnitude, theDriveDirection, theDriveRotation);
         }
-        else if (driveBackwards(theLeftStick)){
+        else if (driveBackwards(theLeftStick)){ // If the robot is driving backwards, edit driving values
+            // Ask Andrew what this does
             if (theDriveDirection > 0){
                 theDriveDirection = theDriveDirection - 180;
             }
@@ -418,11 +419,11 @@ public class TPARobot extends IterativeRobot {
      */    
     
     public void runConveyor(Joystick aStick, double aSpeed){
-        if(shoot6ButtonPressable && aStick.getRawButton(6)){
+        if(shoot6ButtonPressable && aStick.getRawButton(6)){ // Toggle conveyor if the button is pressed
             flipBoolean(conveyorMoving);
             shoot6ButtonPressable = false;
         }
-        else{
+        if(!aStick.getRawButton(6)){ // On button release, allow it to be pressed again
             shoot6ButtonPressable = true;
         }
         theConveyorMotor.set(aSpeed);
@@ -498,16 +499,16 @@ public class TPARobot extends IterativeRobot {
      * Date:    2/4/2012
      * Purpose: To run the ultrasonic sensor. A press of button 8 toggles it on 
      *          and off.
-     * Inputs:  Joystick aStick - the Joystick controlling the analog sensor
-     *          TPAUltrasonicAnalogSensor aSensor - the ultrasonic sensor
+     * Inputs:  TPAUltrasonicAnalogSensor aSensor - the ultrasonic sensor
      * Outputs: 
      */    
     
     public void runUltrasonicSensor(TPAUltrasonicAnalogSensor aSensor){
-        //aSensor.enable();
+        // Read in distance and add to an accumulator
         theDistance = aSensor.getDistance();
         theAccumulatedDistance = theAccumulatedDistance + theDistance;
         theDistancesCollected = theDistancesCollected + 1;
+        // If enough distances have been collected, print the average value out and restart
         if (theDistancesCollected == theAveragingValue){
             theAveragedDistance = theAccumulatedDistance/theDistancesCollected;
             theDriverStationLCD.println(DriverStationLCD.Line.kUser6,1, "" + theAveragedDistance);
