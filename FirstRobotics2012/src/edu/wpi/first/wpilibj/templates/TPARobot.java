@@ -29,7 +29,6 @@ public class TPARobot extends IterativeRobot {
     static final double SHOOTING_SPEED_5 = 1.0;     // The speed of the shooter controlled by button 5
     static final int theAveragingValue = 10;
     double theShootingSpeed;                        // The actual speed the shooter is running
-    static boolean shoot8ButtonPressable = true;    // Flag for pressablilty of button 8 on the shooting joystick
     static boolean shoot6ButtonPressable = true;    // Flag for pressability of button 6 on the shooting joystick
     static boolean shoot4ButtonPressable = true;    // Flag for pressability of button 4 on the shooting joystick 
     static boolean shoot3ButtonPressable = true;    // Flag for pressability of button 3 on the shooting joystick 
@@ -37,7 +36,6 @@ public class TPARobot extends IterativeRobot {
     static boolean left1ButtonPressable = true;     // Flag for pressablity of the trigger on the left joystick
     static boolean flipDriveDirection = false;      // Determines whether the robot is moving forward or backward
     static boolean conveyorMoving = true;           // Determines whether the conveyor is moving
-    static boolean ultrasonicSensorOn = false;      // Determines whether the ultrasonic sensor is on
     static double theAccumulatedDistance;
     static int theDistancesCollected;
     static double theAveragedDistance;
@@ -66,11 +64,11 @@ public class TPARobot extends IterativeRobot {
     Compressor theCompressor;                       // The air compressor
     TPAUltrasonicAnalogSensor theUltrasonicSensor;  // The ultrasonic sensor
 
-    double afls =0;
-    double afrs =0;
-    double arls =0;
-    double arrs =0;
-    int numberCollected=0;
+    double theSumFrontLeftSpeed =0;
+    double theSumFrontRightSpeed =0;
+    double theSumRearLeftSpeed =0;
+    double theSumRearRightSpeed =0;
+    int theNumberCollected=0;
 
 
    
@@ -128,7 +126,7 @@ public class TPARobot extends IterativeRobot {
         }
         
         // Initialize the Ultrasonic sensor at analog port 1 and digital port 14
-        theUltrasonicSensor = new TPAUltrasonicAnalogSensor(14,1);
+        theUltrasonicSensor = new TPAUltrasonicAnalogSensor(9,1);
         if (DEBUG == true){
             System.out.println("The ultrasonic sensor constructed successfully");
         }
@@ -262,7 +260,7 @@ public class TPARobot extends IterativeRobot {
         }
         
         // Run the Ultrasonic sensor
-        runUltrasonicSensor(theShootingStick, theUltrasonicSensor);
+        runUltrasonicSensor(theUltrasonicSensor);
         if (DEBUG == true){
             System.out.println("runUltrasonicSensor called");
         }
@@ -352,35 +350,35 @@ public class TPARobot extends IterativeRobot {
     
     /*--------------------------------------------------------------------------*/
     public void displaySpeed(){
+    
+        double theFrontLeftSpeed = theFrontLeftEncoder.getRate();
+        double theRearLeftSpeed = theRearLeftEncoder.getRate();
+        double theFrontRightSpeed = theFrontRightEncoder.getRate();
+        double theRearRightSpeed = theRearRightEncoder.getRate();
 
-        double tfl = theFrontLeftEncoder.getRate();
-        double trl = theRearLeftEncoder.getRate();
-        double tfr = theFrontRightEncoder.getRate();
-        double trr = theRearRightEncoder.getRate();
+        theSumFrontLeftSpeed += theFrontLeftSpeed;
+        theSumRearLeftSpeed += theRearLeftSpeed;
+        theSumFrontRightSpeed += theFrontRightSpeed;
+        theSumRearRightSpeed += theRearRightSpeed;
+        theNumberCollected++;
 
-        afls += tfl;
-        arls += trl;
-        afrs += tfr;
-        arrs += trr;
-        numberCollected++;
+        if(theNumberCollected == 100){
+            theNumberCollected =0;
+            String theAverageFrontLeftSpeed = "FLS: " + theSumFrontLeftSpeed/100;
+            String theAverageRearLeftSpeed = "RLS: " + theSumRearLeftSpeed/100;
+            String theAverageFrontRightSpeed = "FRS: " + theSumFrontRightSpeed/100;
+            String theAverageRearRightSpeed = "RRS: " + theSumRearRightSpeed/100; 
 
-        if(numberCollected == 100){
-            numberCollected =0;
-            String print1 = "FLS: " + afls/100;
-            String print2 = "RLS: " + arls/100;
-            String print3 = "FRS: " + afrs/100;
-            String print4 = "RRS: " + arrs/100; 
+            theDriverStationLCD.println(DriverStationLCD.Line.kMain6, 1 , theAverageFrontLeftSpeed );
+            theDriverStationLCD.println(DriverStationLCD.Line.kUser2, 1 , theAverageRearLeftSpeed );
+            theDriverStationLCD.println(DriverStationLCD.Line.kUser3, 1 , theAverageFrontRightSpeed );
+            theDriverStationLCD.println(DriverStationLCD.Line.kUser4, 1 , theAverageRearRightSpeed );
+            theDriverStationLCD.updateLCD();
 
-          /*  theDriverStationLCD.println(DriverStationLCD.Line.kMain6, 1 , print1 );
-            theDriverStationLCD.println(DriverStationLCD.Line.kUser2, 1 , print2 );
-            theDriverStationLCD.println(DriverStationLCD.Line.kUser3, 1 , print3 );
-            theDriverStationLCD.println(DriverStationLCD.Line.kUser4, 1 , print4 );
-            theDriverStationLCD.updateLCD(); */
-
-            afls=0;
-            arls=0;
-            afrs=0;
-            arrs=0;
+            theSumFrontLeftSpeed=0;
+            theSumRearLeftSpeed=0;
+            theSumFrontRightSpeed=0;
+            theSumRearRightSpeed=0;
         } 
     }
     /*--------------------------------------------------------------------------*/
@@ -398,7 +396,7 @@ public class TPARobot extends IterativeRobot {
     
     public boolean driveBackwards(Joystick aStick){
         if (left1ButtonPressable  && aStick.getRawButton(1)){
-            flipBoolean (flipDriveDirection); // if flip is false, make it true and vice versa.
+            flipDriveDirection = !flipDriveDirection; // if flip is false, make it true and vice versa.
             left1ButtonPressable = false;
         }
         if (!aStick.getRawButton(1)){
@@ -422,7 +420,7 @@ public class TPARobot extends IterativeRobot {
     
     public void runConveyor(Joystick aStick, double aSpeed){
         if(shoot6ButtonPressable && aStick.getRawButton(6)){ // Toggle conveyor if the button is pressed
-            flipBoolean(conveyorMoving);
+            conveyorMoving = !conveyorMoving;
             shoot6ButtonPressable = false;
         }
         if(!aStick.getRawButton(6)){ // On button release, allow it to be pressed again
@@ -431,28 +429,7 @@ public class TPARobot extends IterativeRobot {
         theConveyorMotor.set(aSpeed);
     }
     /*--------------------------------------------------------------------------*/
-    
-    
-    /*--------------------------------------------------------------------------*/
-    /*
-     * Author:  Marissa Beene
-     * Date:    1/29/12
-     * Purpose: To flip the value of a boolean
-     * Inputs:  boolean aBoolean - the boolean to be flipped
-     * Outputs: boolean - the flipped version of the boolean
-     */    
-    
-    public boolean flipBoolean(boolean aBoolean){
-        if(aBoolean){
-            return false;
-        }
-        else{
-            return true;
-        }
-    }
-    /*--------------------------------------------------------------------------*/
-    
-    
+
     /*--------------------------------------------------------------------------*/
     /*
      * Author:  Marissa Beene
@@ -468,7 +445,7 @@ public class TPARobot extends IterativeRobot {
         theBottomShootingMotor.set(-aSpeed);
     }    
     /*--------------------------------------------------------------------------*/
-
+    
     
     /*--------------------------------------------------------------------------*/
     /*
@@ -501,51 +478,25 @@ public class TPARobot extends IterativeRobot {
      * Date:    2/4/2012
      * Purpose: To run the ultrasonic sensor. A press of button 8 toggles it on 
      *          and off.
-     * Inputs:  Joystick aStick - the Joystick controlling the analog sensor
-     *          TPAUltrasonicAnalogSensor aSensor - the ultrasonic sensor
+     * Inputs:  TPAUltrasonicAnalogSensor aSensor - the ultrasonic sensor
      * Outputs: 
-     */    
-    
-    public void runUltrasonicSensor(Joystick aStick, TPAUltrasonicAnalogSensor aSensor){
-        // If statements enables button toggle
-        if (shoot8ButtonPressable && aStick.getRawButton(8)){
-            ultrasonicSensorOn = flipBoolean(ultrasonicSensorOn);
-            if(DEBUG == true){
-                System.out.println("RunUltrasonicSensor recognizes button 8 press");
-            }
-            shoot8ButtonPressable = false;
+     */
+
+    public void runUltrasonicSensor(TPAUltrasonicAnalogSensor aSensor){
+        // Read in distance and add to an accumulator
+        theDistance = aSensor.getDistance();
+        theAccumulatedDistance = theAccumulatedDistance + theDistance;
+        theDistancesCollected = theDistancesCollected + 1;
+        // If enough distances have been collected, print the average value out and restart
+        if (theDistancesCollected == theAveragingValue){
+            theAveragedDistance = theAccumulatedDistance/theDistancesCollected;
+            theDriverStationLCD.println(DriverStationLCD.Line.kUser6,1, "" + theAveragedDistance);
+            theDriverStationLCD.updateLCD();
+            theAccumulatedDistance = 0;
+            theDistancesCollected = 0;
         }
-        // Still part of button toggle
-        if (!shoot8ButtonPressable && !aStick.getRawButton(8)){
-            shoot8ButtonPressable = true;
-            System.out.println("In else statement");
-            
-        }
-        // Collect distances if the ultrasonic sensor is on
-        if (ultrasonicSensorOn == true){
-            aSensor.enable();
-            // Read in distance and add to an accumulator
-            theDistance = aSensor.getDistance();
-            theAccumulatedDistance += theDistance;
-            theDistancesCollected++;
-            // If enough distances have been collected, print the average value out and restart
-            if (theDistancesCollected == theAveragingValue){
-                theAveragedDistance = theAccumulatedDistance/theDistancesCollected;
-                theDriverStationLCD.println(DriverStationLCD.Line.kUser2,1, "" + theAveragedDistance);
-                theDriverStationLCD.updateLCD();
-                theAccumulatedDistance = 0;
-                theDistancesCollected = 0;
-            }
-            if(DEBUG == true){
-                System.out.println("Sensor Enabled");
-            }
-        }
-        else{
-            aSensor.disable();
-            theDriverStationLCD.println(DriverStationLCD.Line.kUser6,1, "Sensor not Enabled");
-            if(DEBUG == true){
-                System.out.println("Sensor Disabled");
-            }
+        if(DEBUG == true){
+            System.out.println("Sensor Enabled");
         }
     }
     
