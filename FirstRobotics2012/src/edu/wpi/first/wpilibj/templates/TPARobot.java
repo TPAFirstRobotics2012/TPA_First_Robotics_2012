@@ -175,7 +175,7 @@ public class TPARobot extends IterativeRobot {
         Watchdog.getInstance().feed();
         theDriverStationLCD.println(DriverStationLCD.Line.kMain6, 1, "Autonomous Mode Called");
         theDriverStationLCD.updateLCD();    //Displays a message to DriverStationLCD when entering Autonomous mode
-        HybridDrive(theLeftArm, theRightArm);
+        hybridDrive(theLeftArm, theRightArm);
         if (DEBUG == true) {
             System.out.println("Hybrid Drive Called");
         }
@@ -220,7 +220,7 @@ public class TPARobot extends IterativeRobot {
         displaySpeed();
         System.out.println("displaySPeed called");
         
-        DropBallIntoShooter(theRightStick);
+        dropBallIntoShooter(theRightStick);
 /*
         // Brake the robot if no joysick input.
         brakeOnNeutral();
@@ -333,7 +333,7 @@ public void displaySpeed(){
      * Inputs:  Joystick aStick
      * Outputs: None
      */
-        public void DropBallIntoShooter(Joystick aStick) {
+        public void dropBallIntoShooter(Joystick aStick) {
             if(aStick.getRawButton(3)) {        //Throws ball into shooter
                theWedgeUp.set(true);
                theWedgeUp.set(false);
@@ -352,11 +352,24 @@ public void displaySpeed(){
      */    
     
     /*--------------------------------------------------------------------------*/
-            public void HybridDrive(KinectStick aLeftArm, KinectStick aRightArm) {
-                theHybridDriveRotation = aLeftArm.getY();
-                theHybridDriveMagnitude = aRightArm.getY();
-                
-                theRobotDrive.mecanumDrive_Polar(theDriveMagnitude, 0, theDriveRotation );
-            }
+        public void hybridDrive(KinectStick aLeftArm, KinectStick aRightArm) {
+            theHybridDriveRotation = aLeftArm.getY();
+            theHybridDriveMagnitude = aRightArm.getY();
+            
+            theRobotDrive.mecanumDrive_Polar(theDriveMagnitude, 0, theDriveRotation );
+        }
+            
   /*---------------------------------------------------------------------------------------*/
+    
+    /*--------------------------------------------------------------------------*/
+    /*
+     * Author:  
+     * Date:    
+     * Purpose: 
+     * Inputs:  
+     * Outputs: 
+     */    
+    
+    /*--------------------------------------------------------------------------*/
+
 }
