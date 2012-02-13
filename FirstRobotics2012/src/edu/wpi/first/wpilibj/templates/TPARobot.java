@@ -206,6 +206,7 @@ public class TPARobot extends IterativeRobot {
         Watchdog.getInstance().feed();
         theDriverStationLCD.println(DriverStationLCD.Line.kMain6, 1, "Autonomous Mode Called");
         theDriverStationLCD.updateLCD();    //Displays a message to DriverStationLCD when entering Autonomous mode
+        runShooter(SHOOTING_SPEED_5);
         hybridDrive(theLeftArm, theRightArm);
         if (DEBUG == true) {
             System.out.println("Hybrid Drive Called");
@@ -432,7 +433,7 @@ public class TPARobot extends IterativeRobot {
      */    
     
     public void runConveyor(Joystick aStick, double aSpeed){
-        if(shoot6ButtonPressable && aStick.getRawButton(6)){ // Toggle conveyor if the button is pressed
+        if(shoot6ButtonPressable && aStick.getRawButton(2)){ // Toggle conveyor if the button is pressed
             conveyorMoving = !conveyorMoving;
             shoot6ButtonPressable = false;
         }
@@ -523,7 +524,7 @@ public class TPARobot extends IterativeRobot {
      */
      /*--------------------------------------------------------------------------*/
         public void dropBallIntoShooter(Joystick aStick) {
-            if(aStick.getRawButton(3)) {        //Throws ball into shooter
+            if(aStick.getRawButton(1)) {        //Throws ball into shooter
                theWedgeUp.set(true);
                theWedgeUp.set(false);
             }
