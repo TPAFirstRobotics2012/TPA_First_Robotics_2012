@@ -257,10 +257,10 @@ public class TPARobot extends IterativeRobot {
         }
         
         // Display the speed of each wheel
-        displaySpeed();
+        /*displaySpeed();
         if (DEBUG == true){
             System.out.println("displaySpeed called");
-        }
+        } */
         
         // Run the shooter
         runShooter(determineShootingSpeed(theShootingStick));
@@ -440,7 +440,12 @@ public class TPARobot extends IterativeRobot {
         if(!aStick.getRawButton(6)){ // On button release, allow it to be pressed again
             shoot6ButtonPressable = true;
         }
-        theConveyorMotor.set(aSpeed);
+        if(conveyorMoving) {
+            theConveyorMotor.set(aSpeed);
+        }
+        else if (!conveyorMoving) {
+            theConveyorMotor.set(0);
+        }
     }
     /*--------------------------------------------------------------------------*/
 
@@ -516,15 +521,22 @@ public class TPARobot extends IterativeRobot {
     }
     
     /*--------------------------------------------------------------------------*/
-     /* Author:  Sumbhav Sethia
+    /* 
+     * Author:  Sumbhav Sethia
      * Date:    1/29/2012
      * Purpose: To drop one and only one ball into the shooter mechanism
      * Inputs:  Joystick aStick
      * Outputs: None
      */
-     /*--------------------------------------------------------------------------*/
+    
+    /*--------------------------------------------------------------------------*/
+        
         public void dropBallIntoShooter(Joystick aStick) {
             if(aStick.getRawButton(1)) {        //Throws ball into shooter
+               if(DEBUG == true) {
+                   theDriverStationLCD.println(DriverStationLCD.Line.kUser5, 1, "Shooter Fired");
+                   theDriverStationLCD.updateLCD();
+               }
                theWedgeUp.set(true);
                theWedgeUp.set(false);
             }
