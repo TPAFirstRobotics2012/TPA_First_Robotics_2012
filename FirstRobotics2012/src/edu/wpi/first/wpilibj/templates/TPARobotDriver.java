@@ -4,8 +4,8 @@
  */
 package edu.wpi.first.wpilibj.templates;
 
+import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.RobotDrive;
-import edu.wpi.first.wpilibj.Jaguar;
 import edu.wpi.first.wpilibj.SpeedController;
 
 /**
@@ -99,6 +99,26 @@ public class TPARobotDriver extends RobotDrive {
 
     /*--------------------------------------------------------------------------*/
 
+    /*--------------------------------------------------------------------------*/
+    /*
+     * Author:  
+     * Date:    
+     * Purpose: 
+     * Inputs:  
+     * Outputs: 
+     */    
+    /*--------------------------------------------------------------------------*/
+    public void flipTankDrive(Joystick aLeftStick, Joystick aRightStick) {
+        if (aLeftStick == null || aRightStick == null) {
+            throw new NullPointerException("Null HID provided");
+        }
+        tankDrive(-aLeftStick.getY(), -aRightStick.getY());
+    }
     
-    
+    public void flipArcadeDrive(Joystick aStick) {
+        if (aStick == null) {
+            throw new NullPointerException("Null HID provided");
+        }
+        arcadeDrive(-aStick.getY(), -aStick.getX());
+    }
 }
