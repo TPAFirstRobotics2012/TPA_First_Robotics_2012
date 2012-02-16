@@ -15,7 +15,7 @@ import edu.wpi.first.wpilibj.Compressor;
 /**
  * The VM is configured to automatically run this class, and to call the
  * functions corresponding to each mode, as described in the IterativeRobot
- * documentation. If you driveBackwards the name of this class or the package after
+ * documentation. If you change the name of this class or the package after
  * creating this project, you must also update the manifest file in the resource
  * directory.
  */
@@ -320,15 +320,25 @@ public class TPARobot extends IterativeRobot {
             if (DEBUG == true){
                 System.out.println("theRightStick.getZ called" );
             }
-            theRobotDrive.arcadeDrive(theRightStick, false);	// drive with arcade style (use right stick)
+            if(driveBackwards(theLeftStick)) {
+                theRobotDrive.flipArcadeDrive(theRightStick);	// drive with arcade style (use right stick)
+            }
+            else {
+                theRobotDrive.arcadeDrive(theRightStick, false);
+            }
             if (theDriveMode != ARCADE_DRIVE) {
-                // if newly entered arcade drive, print out a message
-                System.out.println("Arcade Drive\n");
-                theDriveMode = ARCADE_DRIVE;
+            // if newly entered arcade drive, print out a message
+            System.out.println("Arcade Drive\n");
+            theDriveMode = ARCADE_DRIVE;
             }
         } else {
             // use tank drive
-            theRobotDrive.tankDrive(theLeftStick, theRightStick);	// drive with tank style
+            if(driveBackwards(theLeftStick)) {            
+                theRobotDrive.flipTankDrive(theLeftStick, theRightStick);	// drive with tank style
+            }
+            else {
+                theRobotDrive.tankDrive(theLeftStick, theRightStick);
+            }
             if (theDriveMode != TANK_DRIVE) {
                 // if newly entered tank drive, print out a message
                 System.out.println("Tank Drive\n");
