@@ -29,19 +29,21 @@ public class TPARobot extends IterativeRobot {
     static final double SHOOTING_SPEED_5 = 1.0;     // The speed of the shooter controlled by button 5
     static final double SHOOTING_SPEED_OFF = 0.0;   // Shooting speed, controlled by button 10
     static double theJoystickSpeed = 0;             // Speed of shooters while Joystick controls speed
-    static boolean joystickRunsShooter = false;            // Use the joystick to control the shooter  at a gradient
-    static boolean joystickRanShooter= false;
-    static final int theAveragingValue = 10;
+    static double shoot9ButtonSpeed = 0;            // Speed of shooters assigned to button 9 of shooting joystick
+    static boolean joystickRunsShooter = false;     // Use the joystick to control the shooter  at a gradient
+    static boolean joystickRanShooter= false;       // True if the joystick used to run the shooter
+    static final int theAveragingValue = 10;        
     double theShootingSpeed = 0.0;                  // The actual speed the shooter is running
     static boolean shoot2ButtonPressable = true;    // Flag for pressability of button 6 on the shooting joystick
     static boolean shoot4ButtonPressable = true;    // Flag for pressability of button 4 on the shooting joystick 
     static boolean shoot3ButtonPressable = true;    // Flag for pressability of button 3 on the shooting joystick 
     static boolean shoot5ButtonPressable = true;    // Flag for pressability of button 5 on the shooting joystick
-    static boolean shoot6ButtonPressable = true;
-    static boolean shoot7ButtonPressable = true;      // Flag for pressability of button 11 on the shooting joystick
+    static boolean shoot6ButtonPressable = true;    // Flag for pressability of button 6 on the shooting joystick
+    static boolean shoot7ButtonPressable = true;    // Flag for pressability of button 7 on the shooting joystick
+    static boolean shoot8ButtonPressable = true;    // Flag for pressability of button 8 on the shooting joystick
     static boolean left1ButtonPressable = true;     // Flag for pressablity of the trigger on the left joystick
     static boolean flipDriveDirection = false;      // Determines whether the robot is moving forward or backward
-    static boolean conveyorMoving = false;           // Determines whether the conveyor is moving
+    static boolean conveyorMoving = false;          // Determines whether the conveyor is moving
     static boolean theRelayFlag = false;            // Is the relay on?
     static double theAccumulatedDistance;
     static int theDistancesCollected;
@@ -487,7 +489,7 @@ public class TPARobot extends IterativeRobot {
     /*--------------------------------------------------------------------------*/
     /*
      * Author:  Marissa Beene
-     * Date:    2/4/12
+     * Date:    2/4/12, 2/16/2012 (Gennaro)
      * Purpose: To determine the speed at which the wheels on the shooter will run.
      *          The speeds are controlled by buttons 4, 3, and 5 on the Joystick.
      * Inputs:  Joystick aStick - the joystick which controls the speed
@@ -507,6 +509,11 @@ public class TPARobot extends IterativeRobot {
         }
         if(aStick.getRawButton(5)){
             theShootingSpeed = SHOOTING_SPEED_5;
+            joystickRunsShooter = false;
+            joystickRanShooter = false;
+        }
+        if(aStick.getRawButton(9)) {
+            theShootingSpeed = shoot9ButtonSpeed;
             joystickRunsShooter = false;
             joystickRanShooter = false;
         }
@@ -657,14 +664,21 @@ public class TPARobot extends IterativeRobot {
     
    /*--------------------------------------------------------------------------*/
     /*
-     * Author:  Sumbhav Sethia
-     * Date:    2/15/2012
+     * Author:  Team
+     * Date:    2/15/2012, 2/16/2012
      * Purpose: Speed Controlled Shooting
      * Inputs:  aJoystick
      * Outputs: 
      */    
         public void shootWithJoystick(Joystick aStick){
-            if (aStick.getRawButton(7) && shoot7ButtonPressable) {
+            if(aStick.getRawButton(8) && shoot8ButtonPressable) {
+                shoot8ButtonPressable = false;
+                shoot9ButtonSpeed = aStick.getMagnitude();
+            }
+            else if(!aStick.getRawButton(8) && !shoot8ButtonPressable) {
+                shoot8ButtonPressable = false;
+            }
+            if(aStick.getRawButton(7) && shoot7ButtonPressable) {
                 joystickRunsShooter = !joystickRunsShooter;
                 shoot7ButtonPressable = false;
                 joystickRanShooter = false;
@@ -820,7 +834,7 @@ public class TPARobot extends IterativeRobot {
     }
     /*--------------------------------------------------------------------------*/
 
-        /*--------------------------------------------------------------------------*/
+    /*--------------------------------------------------------------------------*/
     /*
      * Author: 
      * Date:    
