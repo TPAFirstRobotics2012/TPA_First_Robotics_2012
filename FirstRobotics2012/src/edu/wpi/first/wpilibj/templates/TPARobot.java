@@ -28,6 +28,7 @@ public class TPARobot extends IterativeRobot {
     static final double SHOOTING_SPEED_3 = 0.5;     // The speed of the shooter controlled by button 3
     static final double SHOOTING_SPEED_5 = 1.0;     // The speed of the shooter controlled by button 5
     static final double SHOOTING_SPEED_OFF = 0.0;   // Shooting speed, controlled by button 10
+    boolean joyShoot = true;
     boolean buttonPressable = true;
     static final int theAveragingValue = 10;
     double theShootingSpeed = 0.0;                  // The actual speed the shooter is running
@@ -657,16 +658,19 @@ public class TPARobot extends IterativeRobot {
      */    
         public void shootWithJoystick(Joystick aStick){
             if (aStick.getRawButton(11) && buttonPressable) {
+                if (joyShoot){
                     theTopShootingMotor.set(aStick.getMagnitude());
                     theBottomShootingMotor.set(-(aStick.getMagnitude()));
                     if(aStick.getMagnitude() == 0){
-                       buttonPressable = false;   
+                       joyShoot = false;   
                     }
+                }
                     
             }
             
             if (!aStick.getRawButton(11)){
                 buttonPressable = true;
+                joyShoot = true;
             }
         }
     /*--------------------------------------------------------------------------*/
