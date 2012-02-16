@@ -294,6 +294,8 @@ public class TPARobot extends IterativeRobot {
         dropBallIntoShooter(theShootingStick);
         
         determineJoystick();
+        
+        shootWithJoystick(theRightStick);
 /*
         // Brake the robot if no joysick input.
         brakeOnNeutral();
