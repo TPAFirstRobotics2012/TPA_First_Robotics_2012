@@ -59,7 +59,7 @@ public class TPAUltrasonicAnalogSensor {
         theScaling = thePower.getVoltage()/400;
     }
     
-    public double getDistance(){
+    public double getDistance(){        // Calculate the distance an object is from the sensor
         aVoltage = theAnalogOutput.getVoltage();
         theDistance = aVoltage/theScaling;
         return theDistance;        
