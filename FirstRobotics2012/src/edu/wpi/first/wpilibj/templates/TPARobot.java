@@ -63,9 +63,10 @@ public class TPARobot extends IterativeRobot {
     Joystick theLeftStick;                          // Left joystick
     Joystick theShootingStick;                      // The joystick used for all aspects of the shooting system
     TPARobotDriver theRobotDrive;                   // Robot Drive System
-    double theDriveDirection;                       // Direction the robot will move
-    double theDriveMagnitude;                       // Speed the robot will move at
-    double theDriveRotation;                        // Value the robot will rotate
+    int theDriveMode;                                           // The actual drive mode that is currently selected.
+    static final int UNINITIALIZED_DRIVE = 0;                   // Value when no drive mode is selected
+    static final int ARCADE_DRIVE = 1;                          // Value when arcade mode is selected 
+    static final int TANK_DRIVE = 2;                            // Value when tank drive is selected
     Compressor theCompressor;                       // The air compressor
     TPAUltrasonicAnalogSensor theUltrasonicSensor;  // The ultrasonic sensor
     Relay theRelay;                                 // The Spike Relay
@@ -175,13 +176,6 @@ public class TPARobot extends IterativeRobot {
             }
         }
         
-        // Default the robot to not move
-        theDriveDirection = 0;
-        theDriveMagnitude = 0;
-        theDriveRotation = 0;
-        if (DEBUG == true){
-            System.out.println("The robot set to not move");
-        }
                 
         if (DEBUG == true){
         System.out.println("RobotInit() completed.\n");
@@ -320,34 +314,27 @@ public class TPARobot extends IterativeRobot {
      * Outputs: None
      */    
      public void driveRobot() {
-        theDriveDirection = theLeftStick.getDirectionDegrees(); // Set the direction to the value of the left stick
-        theDriveMagnitude = theLeftStick.getMagnitude();    // Set the magnitude to the value of the left stick
-        theDriveRotation = (theRightStick.getX()); // Set the rotation to the value of the right stick
-        //theRobotDrive.mecanumDrive_Polar(.3, 180, 0);
-        if (DEBUG == true){ 
-        System.out.println("The drive rotation in degrees" + theDriveRotation);
-        System.out.println("The drive magnitude is" + theDriveMagnitude);
-        System.out.println("The drive direction is" + theDriveDirection);
-        }
-        if (!driveBackwards(theLeftStick)){ // If the robot is driving forwards, feed it normal values
-            theRobotDrive.mecanumDrive_Polar(theDriveMagnitude, theDriveDirection, theDriveRotation);
-        }
-        else if (driveBackwards(theLeftStick)){ // If the robot is driving backwards, edit driving values
-            // Ask Andrew what this does
-            if (theDriveDirection > 0){
-                theDriveDirection = theDriveDirection - 180;
+        // determine if tank or arcade mode, based upon position of "Z" wheel on kit joystick
+        if (theRightStick.getZ() <= 0) {    // Logitech Attack3 has z-polarity reversed; up is negative
+            // use arcade drive
+            if (DEBUG == true){
+                System.out.println("theRightStick.getZ called" );
             }
-            else{
-                theDriveDirection = 180 + theDriveDirection;
+            theRobotDrive.arcadeDrive(theRightStick, false);	// drive with arcade style (use right stick)
+            if (theDriveMode != ARCADE_DRIVE) {
+                // if newly entered arcade drive, print out a message
+                System.out.println("Arcade Drive\n");
+                theDriveMode = ARCADE_DRIVE;
             }
-           // theDriveRotation = -theDriveRotation;
-            theRobotDrive.mecanumDrive_Polar(theDriveMagnitude, theDriveDirection, theDriveRotation);
+        } else {
+            // use tank drive
+            theRobotDrive.tankDrive(theLeftStick, theRightStick);	// drive with tank style
+            if (theDriveMode != TANK_DRIVE) {
+                // if newly entered tank drive, print out a message
+                System.out.println("Tank Drive\n");
+                theDriveMode = TANK_DRIVE;
+            }
         }
-        if (DEBUG == true){
-            System.out.println("The drive rotation is" + theDriveRotation);
-            System.out.println("The drive magnitude is" + theDriveMagnitude);
-            System.out.println("The drive direction in degrees is" + theDriveDirection);
-        }    
     }
 
     /*--------------------------------------------------------------------------*/
@@ -674,7 +661,139 @@ public class TPARobot extends IterativeRobot {
             }
         }
     /*--------------------------------------------------------------------------*/
+                
+    /*--------------------------------------------------------------------------*/
+    /*
+     * Author:  Marissa Beene
+     * Date:    10/30/2011 (Marissa Beene)
+     * Purpose: To use the motors to brake the robot. Takes the speed from the 
+     *          each motor and sends the reverse signal back.
+     * Inputs:  Double aSpeedRight - the speed of the right motor
+     *          Double aSpeedLeft - the speed of the left motor
+     * Outputs: None
+     */
+    
+    public void brake(double aSpeedLeft, double aSpeedRight){
+        theRobotDrive.tankDrive(-aSpeedLeft, -aSpeedRight); //drive the robot at opposite values
+        }
+    /*--------------------------------------------------------------------------*/
+    
+    
+    /*--------------------------------------------------------------------------*/
+    /*
+     * Author:  Marissa Beene
+     * Date:    10/30/11
+     * Purpose: To determine if there is no signal. First determines the drive
+     *          mode and discards the left stick if in arcade mode. If there is 
+     *          no signal to the drive train, it will return true, otherwise it 
+     *          will return false
+     * Inputs:  Joystick aRightStick  - the right joystick
+     *          Joystick aLeftStick - the left joystick
+     * Outputs: Boolean - returns true if the drive train is not sent a signal
+     */
+    
+    public boolean isNeutral(Joystick aRightStick, Joystick aLeftStick){
+        if (DEBUG == true){
+            System.out.println("isNeutral Called");
+        }
+        if(theDriveMode == ARCADE_DRIVE){ //if arcade drive
+            if (DEBUG == true){
+                System.out.println("Arcade Drive Recognized by isNeutral");
+            }
+            if(aRightStick.getY() == 0 && aRightStick.getX() == 0){ //there is no input
+                return true;
+            }
+            else{
+                return false;
+            }
+        }
+        else if(theDriveMode == TANK_DRIVE){ //if tank drive
+            if (DEBUG == true){
+                System.out.println("Tank Drive Recognized by isNeutral");
+            }
+            if(aRightStick.getY() == 0 && aLeftStick.getY() == 0){
+                return true;
+            }
+            else{
+                return false;
+            }
+        }
+        else{
+            return false;
+        } 
+    }
+    /*--------------------------------------------------------------------------*/
+    
         
+    /*--------------------------------------------------------------------------*/
+    /*
+     * Author:  Marissa Beene
+     * Date:    11/5/11
+     * Purpose: To brake the robot if there is no signal in arcade mode. If the 
+     *          wheel is not considered stopped, it will read the direction that the wheel
+     *          is turning and send it the stop value in the other direction.
+     * Inputs:  None
+     * Outputs: None
+     */
+    
+    public void brakeOnNeutral(){        
+        double theFrontLeftSpeedOutput = 0; // value the left motor will be sent
+        double theFrontRightSpeedOutput = 0;
+        double theRearLeftSpeedOutput = 0;
+        double theRearRightSpeedOutput = 0; // value the right motor will be sent
+        double theRightSpeedOutput = 0;
+        double theLeftSpeedOutput = 0;
+        
+        if (DEBUG == true){
+            System.out.println("brakeOnNeutral called");
+        }
+        
+        if(isNeutral(theRightStick, theLeftStick)){ // if no signal is sent to the robot
+            
+            // get the direction of the left motor and store the stop value vector to theLeftSpeedOutput
+            if(!theFrontLeftEncoder.getStopped()){
+                if(theFrontLeftEncoder.getDirection()){
+                    theFrontLeftSpeedOutput = STOP_VALUE;
+                }
+                else{
+                    theFrontLeftSpeedOutput = -STOP_VALUE;
+                }
+            }
+            
+            // get the direction of the right motor and store a stop value vector to theRightSpeedOutput
+            if(!theFrontRightEncoder.getStopped()){
+                if(theFrontRightEncoder.getDirection()){
+                    theFrontRightSpeedOutput = STOP_VALUE;
+                }
+                else{
+                    theFrontRightSpeedOutput = -STOP_VALUE;
+                }
+            }
+            
+            if(!theRearRightEncoder.getStopped()){
+                if(theRearRightEncoder.getDirection()){
+                    theRearRightSpeedOutput = STOP_VALUE;
+                }
+                else{
+                    theRearRightSpeedOutput = -STOP_VALUE;
+                }
+            }
+            if(!theRearRightEncoder.getStopped()){
+                if(theRearRightEncoder.getDirection()){
+                    theRearRightSpeedOutput = STOP_VALUE;
+                }
+                else{
+                    theRearRightSpeedOutput = -STOP_VALUE;
+                }
+            }
+            theLeftSpeedOutput = (theRearLeftSpeedOutput + theFrontLeftSpeedOutput)/2;
+            theRightSpeedOutput = (theRearRightSpeedOutput + theFrontRightSpeedOutput)/2;
+        // brake the robot at the value of the stop value
+        brake(theLeftSpeedOutput, theRightSpeedOutput);
+        }
+    }
+    /*--------------------------------------------------------------------------*/
+
         /*--------------------------------------------------------------------------*/
     /*
      * Author: 
