@@ -24,10 +24,11 @@ public class TPARobot extends IterativeRobot {
     static final boolean CAMERA = false;            // Camera Trigger
     static final double STOP_VALUE = 0.1;           // Value sent to each motor when the robot is stopping
     static final double CONVEYOR_SPEED = 1.0;       // The speed the conveyor motor will be set to move
-    static final double SHOOTING_SPEED_4 = 0.1;     // The speed of the shooter controlled by button 4
+    static final double SHOOTING_SPEED_4 = 0.3;     // The speed of the shooter controlled by button 4
     static final double SHOOTING_SPEED_3 = 0.5;     // The speed of the shooter controlled by button 3
     static final double SHOOTING_SPEED_5 = 1.0;     // The speed of the shooter controlled by button 5
     static final double SHOOTING_SPEED_OFF = 0.0;   // Shooting speed, controlled by button 10
+    boolean buttonPressable = true;
     static final int theAveragingValue = 10;
     double theShootingSpeed = 0.0;                  // The actual speed the shooter is running
     static boolean shoot2ButtonPressable = true;    // Flag for pressability of button 6 on the shooting joystick
@@ -278,9 +279,9 @@ public class TPARobot extends IterativeRobot {
         if (DEBUG == true){
             System.out.println("runShooter called");
         }
-        theDriverStationLCD.println(DriverStationLCD.Line.kMain6, 1, "" + theTopShootingMotor.get());
-        theDriverStationLCD.println(DriverStationLCD.Line.kUser2, 1, "" + theBottomShootingMotor.get());
-        theDriverStationLCD.updateLCD();
+        //theDriverStationLCD.println(DriverStationLCD.Line.kMain6, 1, "" + theTopShootingMotor.get());
+        //theDriverStationLCD.println(DriverStationLCD.Line.kUser2, 1, "" + theBottomShootingMotor.get());
+        //theDriverStationLCD.updateLCD();
         
         // Run the Ultrasonic sensor
         /*runUltrasonicSensor(theUltrasonicSensor);
@@ -291,6 +292,8 @@ public class TPARobot extends IterativeRobot {
         System.out.println("displaySpeed called");
         
         dropBallIntoShooter(theShootingStick);
+        
+        determineJoystick();
 /*
         // Brake the robot if no joysick input.
         brakeOnNeutral();
@@ -314,7 +317,6 @@ public class TPARobot extends IterativeRobot {
      * Outputs: None
      */    
      public void driveRobot() {
-        
         theDriveDirection = theLeftStick.getDirectionDegrees(); // Set the direction to the value of the left stick
         theDriveMagnitude = theLeftStick.getMagnitude();    // Set the magnitude to the value of the left stick
         theDriveRotation = (theRightStick.getX()); // Set the rotation to the value of the right stick
@@ -548,6 +550,12 @@ public class TPARobot extends IterativeRobot {
     /*--------------------------------------------------------------------------*/
         
         public void dropBallIntoShooter(Joystick aStick) {
+           /* if(aStick.getRawButton(1)) {
+                theRelay.set(Relay.Value.kForward);
+            }            
+            if(aStick.getRawButton(11)) {
+                theRelay.set(Relay.Value.kOff);
+            } */
             if(aStick.getRawButton(1)) {        //Throws ball into shooter
                if(DEBUG == true) {
                    theDriverStationLCD.println(DriverStationLCD.Line.kUser5, 1, "Shooter Fired");
@@ -556,16 +564,16 @@ public class TPARobot extends IterativeRobot {
                if(theRelayFlag) {
                    theRelay.set(Relay.Value.kForward);
                    theRelayFlag = false;
-               }
-               else if (!theRelayFlag) {
-                   theRelay.set(Relay.Value.kOff);
-               }               
-            }
-            else {
-                theRelayFlag = true;
+               }            
+            } 
+            else if(!aStick.getRawButton(1)) {
+                if(!theRelayFlag) {
+                    theRelay.set(Relay.Value.kOff);
+                    theRelayFlag = true;
+                }
                 theDriverStationLCD.println(DriverStationLCD.Line.kUser5, 1, "               ");
                 theDriverStationLCD.updateLCD();
-            }
+            } 
         }
     
     /*--------------------------------------------------------------------------*/
@@ -615,6 +623,65 @@ public class TPARobot extends IterativeRobot {
     
     /*--------------------------------------------------------------------------*/
     /*
+     * Author:  Gennaro De Luca
+     * Date:    2/14/12
+     * Purpose: Determine which joystick is which
+     * Inputs:  None
+     * Outputs: None
+     */    
+    
+    /*--------------------------------------------------------------------------*/
+
+        public void determineJoystick() {
+            if(theLeftStick.getRawButton(6)) {
+                theDriverStationLCD.println(DriverStationLCD.Line.kMain6, 1, "Left       ");
+            }
+            else if(theRightStick.getRawButton(6)) {
+                theDriverStationLCD.println(DriverStationLCD.Line.kMain6, 1, "Right      ");
+            }
+            else if(theShootingStick.getRawButton(6)) {
+                theDriverStationLCD.println(DriverStationLCD.Line.kMain6, 1, "Shooting");
+            }
+            theDriverStationLCD.updateLCD();
+        }
+    
+   /*--------------------------------------------------------------------------*/
+    /*
+     * Author:  Sumbhav Sethia
+     * Date:    2/15/2012
+     * Purpose: Speed Controlled Shooting
+     * Inputs:  aJoystick
+     * Outputs: 
+     */    
+        public void shootWithJoystick(Joystick aStick){
+            if (aStick.getRawButton(11) && buttonPressable) {
+                    theTopShootingMotor.set(aStick.getMagnitude());
+                    theBottomShootingMotor.set(-(aStick.getMagnitude()));
+                    if(aStick.getMagnitude() == 0){
+                       buttonPressable = false;   
+                    }
+                    
+            }
+            
+            if (!aStick.getRawButton(11)){
+                buttonPressable = true;
+            }
+        }
+    /*--------------------------------------------------------------------------*/
+        
+        /*--------------------------------------------------------------------------*/
+    /*
+     * Author: 
+     * Date:    
+     * Purpose: 
+     * Inputs:  
+     * Outputs: 
+     */    
+    
+    /*--------------------------------------------------------------------------*/
+
+        /*--------------------------------------------------------------------------*/
+    /*
      * Author:  
      * Date:    
      * Purpose: 
@@ -623,4 +690,6 @@ public class TPARobot extends IterativeRobot {
      */    
     
     /*--------------------------------------------------------------------------*/
+
 }
+    
