@@ -22,14 +22,14 @@ public class TPAUltrasonicAnalogSensor {
     
     TPAUltrasonicAnalogSensor(int aAnalogChannel) {
         theAnalogOutput = new AnalogChannel (aAnalogChannel);
-        theScaling = 5.0/512;
+        theScaling = 0.0125;
         theDistance = 0;
         theDigitalConnected = false;
     }
     TPAUltrasonicAnalogSensor(int aDigitalChannel, int aAnalogChannel){
         theDigitalOutput = new DigitalOutput (aDigitalChannel);
         theAnalogOutput = new AnalogChannel (aAnalogChannel);
-        theScaling = 5.0/512;
+        theScaling = 0.0125;
         theDistance = 0;
         theDigitalConnected = true;
     }
@@ -38,7 +38,7 @@ public class TPAUltrasonicAnalogSensor {
         theDigitalOutput = new DigitalOutput(aDigitalChannel);
         theAnalogOutput = new AnalogChannel (aAnalogChannel);
         thePower = new AnalogChannel (aPowerChannel);
-        theScaling = thePower.getVoltage()/512;
+        theScaling = thePower.getVoltage()/400;
         theDistance = 0;
         theDigitalConnected = true;
     }
@@ -56,10 +56,10 @@ public class TPAUltrasonicAnalogSensor {
     }
     
     public void refreshScaling(){
-        theScaling = thePower.getVoltage()/512;
+        theScaling = thePower.getVoltage()/400;
     }
     
-    public double getDistance(){
+    public double getDistance(){        // Calculate the distance an object is from the sensor
         aVoltage = theAnalogOutput.getVoltage();
         theDistance = aVoltage/theScaling;
         return theDistance;        
