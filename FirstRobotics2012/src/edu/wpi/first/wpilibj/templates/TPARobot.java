@@ -28,14 +28,14 @@ public class TPARobot extends IterativeRobot {
     static final double SHOOTING_SPEED_3 = 0.5;     // The speed of the shooter controlled by button 3
     static final double SHOOTING_SPEED_5 = 1.0;     // The speed of the shooter controlled by button 5
     static final double SHOOTING_SPEED_OFF = 0.0;   // Shooting speed, controlled by button 10
-    boolean joyShoot = true;
-    boolean buttonPressable = true;
+    boolean joystickRunsShooter = false;            // Use the joystick to control the shooter  at a gradient
     static final int theAveragingValue = 10;
     double theShootingSpeed = 0.0;                  // The actual speed the shooter is running
     static boolean shoot2ButtonPressable = true;    // Flag for pressability of button 6 on the shooting joystick
     static boolean shoot4ButtonPressable = true;    // Flag for pressability of button 4 on the shooting joystick 
     static boolean shoot3ButtonPressable = true;    // Flag for pressability of button 3 on the shooting joystick 
     static boolean shoot5ButtonPressable = true;    // Flag for pressability of button 5 on the shooting joystick
+        boolean shoot7ButtonPressable = true;      // Flag for pressability of button 11 on the shooting joystick
     static boolean left1ButtonPressable = true;     // Flag for pressablity of the trigger on the left joystick
     static boolean flipDriveDirection = false;      // Determines whether the robot is moving forward or backward
     static boolean conveyorMoving = false;           // Determines whether the conveyor is moving
@@ -216,8 +216,8 @@ public class TPARobot extends IterativeRobot {
     public void autonomousPeriodic() {
         
         Watchdog.getInstance().feed();
-        theDriverStationLCD.println(DriverStationLCD.Line.kMain6, 1, "Autonomous Mode Called");
-        theDriverStationLCD.updateLCD();    //Displays a message to DriverStationLCD when entering Autonomous mode
+        //theDriverStationLCD.println(DriverStationLCD.Line.kMain6, 1, "Autonomous Mode Called");
+        //theDriverStationLCD.updateLCD();    //Displays a message to DriverStationLCD when entering Autonomous mode
         runShooter(0);
         hybridDrive(theLeftArm, theRightArm);
         if (DEBUG == true) {
@@ -296,7 +296,7 @@ public class TPARobot extends IterativeRobot {
         
         determineJoystick();
         
-        shootWithJoystick(theRightStick);
+        shootWithJoystick(theShootingStick);
 /*
         // Brake the robot if no joysick input.
         brakeOnNeutral();
@@ -497,15 +497,19 @@ public class TPARobot extends IterativeRobot {
     public double determineShootingSpeed(Joystick aStick){
         if(aStick.getRawButton(4)){
             theShootingSpeed = SHOOTING_SPEED_4;
+            joystickRunsShooter = false;
         }
         if(aStick.getRawButton(3)){
             theShootingSpeed = SHOOTING_SPEED_3;
+            joystickRunsShooter = false;
         }
         if(aStick.getRawButton(5)){
             theShootingSpeed = SHOOTING_SPEED_5;
+            joystickRunsShooter = false;
         }
         if(aStick.getRawButton(10)) {
             theShootingSpeed = SHOOTING_SPEED_OFF;
+            joystickRunsShooter = false;
         }
         return theShootingSpeed;
     }
@@ -657,20 +661,16 @@ public class TPARobot extends IterativeRobot {
      * Outputs: 
      */    
         public void shootWithJoystick(Joystick aStick){
-            if (aStick.getRawButton(11) && buttonPressable) {
-                if (joyShoot){
-                    theTopShootingMotor.set(aStick.getMagnitude());
-                    theBottomShootingMotor.set(-(aStick.getMagnitude()));
-                    if(aStick.getMagnitude() == 0){
-                       joyShoot = false;   
-                    }
-                }
-                    
+            if (aStick.getRawButton(7) && shoot7ButtonPressable) {
+                joystickRunsShooter = !joystickRunsShooter;
+                shoot7ButtonPressable = false;
             }
-            
-            if (!aStick.getRawButton(11)){
-                buttonPressable = true;
-                joyShoot = true;
+            if(joystickRunsShooter) {
+                theTopShootingMotor.set(aStick.getMagnitude());
+                theBottomShootingMotor.set(-(aStick.getMagnitude()));
+            }
+            if (!aStick.getRawButton(7) && !shoot7ButtonPressable){
+                shoot7ButtonPressable = true;
             }
         }
     /*--------------------------------------------------------------------------*/
