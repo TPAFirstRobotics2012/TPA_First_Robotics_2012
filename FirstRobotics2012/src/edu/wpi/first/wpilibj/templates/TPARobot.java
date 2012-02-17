@@ -671,13 +671,7 @@ public class TPARobot extends IterativeRobot {
      * Outputs: 
      */    
         public void shootWithJoystick(Joystick aStick){
-            if(aStick.getRawButton(8) && shoot8ButtonPressable) {
-                shoot8ButtonPressable = false;
-                shoot9ButtonSpeed = aStick.getMagnitude();
-            }
-            else if(!aStick.getRawButton(8) && !shoot8ButtonPressable) {
-                shoot8ButtonPressable = false;
-            }
+            
             if(aStick.getRawButton(7) && shoot7ButtonPressable) {
                 joystickRunsShooter = !joystickRunsShooter;
                 shoot7ButtonPressable = false;
@@ -690,6 +684,16 @@ public class TPARobot extends IterativeRobot {
                     theJoystickSpeed = aStick.getMagnitude();
                     joystickRunsShooter = false;
                     joystickRanShooter = true;
+                }
+                else if(!aStick.getRawButton(6) && !shoot6ButtonPressable) {
+                    shoot6ButtonPressable = true;
+                }
+                if(aStick.getRawButton(8) && shoot8ButtonPressable) {
+                shoot8ButtonPressable = false;
+                shoot9ButtonSpeed = aStick.getMagnitude();
+                }
+                else if(!aStick.getRawButton(8) && !shoot8ButtonPressable) {
+                    shoot8ButtonPressable = true;
                 }
             }
             else if(!joystickRunsShooter && joystickRanShooter) {
