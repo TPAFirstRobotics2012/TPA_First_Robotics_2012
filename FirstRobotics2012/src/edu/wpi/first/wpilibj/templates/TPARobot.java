@@ -28,17 +28,22 @@ public class TPARobot extends IterativeRobot {
     static final double SHOOTING_SPEED_3 = 0.5;     // The speed of the shooter controlled by button 3
     static final double SHOOTING_SPEED_5 = 1.0;     // The speed of the shooter controlled by button 5
     static final double SHOOTING_SPEED_OFF = 0.0;   // Shooting speed, controlled by button 10
-    boolean joystickRunsShooter = false;            // Use the joystick to control the shooter  at a gradient
-    static final int theAveragingValue = 10;
+    static double theJoystickSpeed = 0;             // Speed of shooters while Joystick controls speed
+    static double shoot9ButtonSpeed = 0;            // Speed of shooters assigned to button 9 of shooting joystick
+    static boolean joystickRunsShooter = false;     // Use the joystick to control the shooter  at a gradient
+    static boolean joystickRanShooter= false;       // True if the joystick used to run the shooter
+    static final int theAveragingValue = 10;        
     double theShootingSpeed = 0.0;                  // The actual speed the shooter is running
     static boolean shoot2ButtonPressable = true;    // Flag for pressability of button 6 on the shooting joystick
     static boolean shoot4ButtonPressable = true;    // Flag for pressability of button 4 on the shooting joystick 
     static boolean shoot3ButtonPressable = true;    // Flag for pressability of button 3 on the shooting joystick 
     static boolean shoot5ButtonPressable = true;    // Flag for pressability of button 5 on the shooting joystick
-        boolean shoot7ButtonPressable = true;      // Flag for pressability of button 11 on the shooting joystick
+    static boolean shoot6ButtonPressable = true;    // Flag for pressability of button 6 on the shooting joystick
+    static boolean shoot7ButtonPressable = true;    // Flag for pressability of button 7 on the shooting joystick
+    static boolean shoot8ButtonPressable = true;    // Flag for pressability of button 8 on the shooting joystick
     static boolean left1ButtonPressable = true;     // Flag for pressablity of the trigger on the left joystick
     static boolean flipDriveDirection = false;      // Determines whether the robot is moving forward or backward
-    static boolean conveyorMoving = false;           // Determines whether the conveyor is moving
+    static boolean conveyorMoving = false;          // Determines whether the conveyor is moving
     static boolean theRelayFlag = false;            // Is the relay on?
     static double theAccumulatedDistance;
     static int theDistancesCollected;
@@ -63,13 +68,16 @@ public class TPARobot extends IterativeRobot {
     Joystick theLeftStick;                          // Left joystick
     Joystick theShootingStick;                      // The joystick used for all aspects of the shooting system
     TPARobotDriver theRobotDrive;                   // Robot Drive System
-    double theDriveDirection;                       // Direction the robot will move
-    double theDriveMagnitude;                       // Speed the robot will move at
-    double theDriveRotation;                        // Value the robot will rotate
+    int theDriveMode;                                           // The actual drive mode that is currently selected.
+    static final int UNINITIALIZED_DRIVE = 0;                   // Value when no drive mode is selected
+    static final int ARCADE_DRIVE = 1;                          // Value when arcade mode is selected 
+    static final int TANK_DRIVE = 2;                            // Value when tank drive is selected
     Compressor theCompressor;                       // The air compressor
     TPAUltrasonicAnalogSensor theUltrasonicSensor;  // The ultrasonic sensor
     Relay theRelay;                                 // The Spike Relay
-    
+    double theDriveDirection;                       // Direction the robot will move
+    double theDriveMagnitude;                       // Speed the robot will move at
+    double theDriveRotation;                        // Value the robot will rotate
     double theSumFrontLeftSpeed =0;
     double theSumFrontRightSpeed =0;
     double theSumRearLeftSpeed =0;
@@ -81,7 +89,7 @@ public class TPARobot extends IterativeRobot {
     double theHybridDriveMagnitude;
     double theHybridDriveDirection;
 
-       
+    
     /*--------------------------------------------------------------------------*/
     /*
      * Author:  Marissa Beene
