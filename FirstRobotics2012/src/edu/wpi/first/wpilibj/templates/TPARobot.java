@@ -493,23 +493,31 @@ public class TPARobot extends IterativeRobot {
      * Inputs:  Joystick aStick - the joystick which controls the speed
      * Outputs: double theShootingSpeed - the speed the shooter will run at
      */    
-    
-    public double determineShootingSpeed(Joystick aStick){
+ public double determineShootingSpeed(Joystick aStick){
         if(aStick.getRawButton(4)){
             theShootingSpeed = SHOOTING_SPEED_4;
             joystickRunsShooter = false;
+            joystickRanShooter = false;
         }
         if(aStick.getRawButton(3)){
             theShootingSpeed = SHOOTING_SPEED_3;
             joystickRunsShooter = false;
+            joystickRanShooter = false;
         }
         if(aStick.getRawButton(5)){
             theShootingSpeed = SHOOTING_SPEED_5;
             joystickRunsShooter = false;
+            joystickRanShooter = false;
+        }
+        if(aStick.getRawButton(9)) {
+            theShootingSpeed = shoot9ButtonSpeed;
+            joystickRunsShooter = false;
+            joystickRanShooter = false;
         }
         if(aStick.getRawButton(10)) {
             theShootingSpeed = SHOOTING_SPEED_OFF;
             joystickRunsShooter = false;
+            joystickRanShooter = false;
         }
         return theShootingSpeed;
     }
@@ -518,7 +526,6 @@ public class TPARobot extends IterativeRobot {
     
     /*--------------------------------------------------------------------------*/
     /*
-<<<<<<< HEAD
      * Author:  Marissa Beene
      * Date:    2/4/2012
      * Purpose: To run the ultrasonic sensor. A press of button 8 toggles it on 
