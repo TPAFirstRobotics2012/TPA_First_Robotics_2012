@@ -28,7 +28,7 @@ public class TPARobot extends IterativeRobot {
     static final double SHOOTING_SPEED_3 = 0.5;     // The speed of the shooter controlled by button 3
     static final double SHOOTING_SPEED_5 = 1.0;     // The speed of the shooter controlled by button 5
     static final double SHOOTING_SPEED_OFF = 0.0;   // Shooting speed, controlled by button 10
-    static final double THE_AUTONOMOUS_SHOOTING_SPEED = 0.5; //The speed at which the shooter will move in autonomous
+    static final double THE_AUTONOMOUS_SHOOTING_SPEED = 1.0; //The speed at which the shooter will move in autonomous
     static final double TOTAL_AMOUNT_OF_BALLS = 2;   //The total amount of balls held by the Robot in Autonomous Mode     
     boolean joystickRunsShooter = false;            // Use the joystick to control the shooter  at a gradient
     static final int theAveragingValue = 10;
@@ -85,9 +85,11 @@ public class TPARobot extends IterativeRobot {
     int theNumberCollected=0;
     KinectStick theLeftArm;                         //Your Left Arm
     KinectStick theRightArm;                        //Your Right Arm
+    Kinect theKinect;                               //The Kinect
     double theHybridDriveRotation;
     double theHybridDriveMagnitude;
     double theHybridDriveDirection;
+    int theNumberOfPlayers;                        //Number of players detected by the Kinect
 
        
     /*--------------------------------------------------------------------------*/
@@ -162,8 +164,10 @@ public class TPARobot extends IterativeRobot {
             System.out.println("Relay initialized");
         }
         
-        //Try to initialized KinectSticks and returns true if they are initialized and false if they are not
+        //Try to initialize KinectSticks and returns true if they are initialized and false if they are not
         //If they are initalized, then we are in Hybrid Mode. If they are not we are in autonomous shooting mode
+        theLeftArm = new KinectStick(1); //Try to initialize your two arms as joysticks
+        theRightArm = new KinectStick(2);
         inHybridMode = testForKinect();
             
             
@@ -786,19 +790,12 @@ public class TPARobot extends IterativeRobot {
     
     /*--------------------------------------------------------------------------*/
         public boolean testForKinect() {
-            try {
-                theLeftArm = new KinectStick(1); //Try to initialize your two arms as joysticks
-                theRightArm = new KinectStick(2);
-            }
-            
-            catch (NullPointerException ex){  //If it fails, when there is no Kinect connected, make kinectConnected false
-                kinectConnected = false;
-                System.out.println("Kinect is not Kinnected");
-            }
-            
-            finally{
+            theKinect = Kinect.getInstance();
+            theNumberOfPlayers = theKinect.getNumberOfPlayers();
+            if (theNumberOfPlayers == 0){
+                kinectConnected = false;   
+               }
                 return kinectConnected;
-            }
         }
   /*---------------------------------------------------------------------------------------*/
    
@@ -843,17 +840,12 @@ public class TPARobot extends IterativeRobot {
     
     /*--------------------------------------------------------------------------*/
         public void autonomousMode(){
-            while (theCurrentBallNumber <= TOTAL_AMOUNT_OF_BALLS){ //While there are still balls left to be shot
                 theTopShootingMotor.set(THE_AUTONOMOUS_SHOOTING_SPEED); //Turn the Shooting Motors on
                 theBottomShootingMotor.set(-(THE_AUTONOMOUS_SHOOTING_SPEED));
+                Timer.delay(0.5);
                 theRelay.set(Relay.Value.kForward); //Place a ball in the shooter
                 Timer.delay(1.0); //Leave the loader up for a second, so that the ball can be shot
                 theRelay.set(Relay.Value.kOff); //Get the loader ready to receive another ball
-                theCurrentBallNumber++; //Tell the code that we are shooting the next ball
-                
-            }
-             theTopShootingMotor.set(0.0); //Turn the shooting motors off
-             theBottomShootingMotor.set(0.0);
         }
 
         /*--------------------------------------------------------------------------*/
