@@ -325,7 +325,7 @@ public class TPARobot extends IterativeRobot {
             if (DEBUG == true){
                 System.out.println("theRightStick.getZ called" );
             }
-            if(driveBackwards(theLeftStick)) {
+            if(driveBackwards(theRightStick)) {
                 theRobotDrive.flipArcadeDrive(theRightStick);	// drive with arcade style (use right stick)
             }
             else {
