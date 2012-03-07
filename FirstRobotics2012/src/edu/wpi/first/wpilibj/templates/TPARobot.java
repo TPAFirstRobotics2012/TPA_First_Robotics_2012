@@ -81,7 +81,8 @@ public class TPARobot extends IterativeRobot {
     TPAUltrasonicAnalogSensor theLeftUltrasonicSensor;  // The ultrasonic sensor
     TPAUltrasonicAnalogSensor theFrontUltrasonicSensor;  // The ultrasonic sensor
     Relay theRelay;                                 // The Spike Relay
-    
+    boolean theShooterRunning = false;
+    boolean theConveyorRunning = false;
     double theSumFrontLeftSpeed =0;
     double theSumFrontRightSpeed =0;
     double theSumRearLeftSpeed =0;
@@ -474,18 +475,24 @@ public class TPARobot extends IterativeRobot {
      */    
     
     public void runConveyor(Joystick aStick, double aSpeed){
-        if(shoot2ButtonPressable && aStick.getRawButton(2)){ // Toggle conveyor if the button is pressed
-            conveyorMoving = !conveyorMoving;
-            shoot2ButtonPressable = false;
+        if(aSpeed >= 0.1) {
+            theConveyorRunning = true;
+            theShooterRunning = false;
         }
-        if(!aStick.getRawButton(2)){ // On button release, allow it to be pressed again
-            shoot2ButtonPressable = true;
-        }
-        if(conveyorMoving) {
-            theConveyorMotor.set(aSpeed);
-        }
-        else if (!conveyorMoving) {
-            theConveyorMotor.set(0);
+        if(theConveyorRunning) {
+            if(shoot2ButtonPressable && aStick.getRawButton(2)){ // Toggle conveyor if the button is pressed
+                conveyorMoving = !conveyorMoving;
+                shoot2ButtonPressable = false;
+            }
+            if(!aStick.getRawButton(2)){ // On button release, allow it to be pressed again
+                shoot2ButtonPressable = true;
+            }
+            if(conveyorMoving) {
+                theConveyorMotor.set(aSpeed);
+            }
+            else if (!conveyorMoving) {
+                theConveyorMotor.set(0);
+            }
         }
     }
     /*--------------------------------------------------------------------------*/
@@ -501,8 +508,14 @@ public class TPARobot extends IterativeRobot {
      */    
     
     public void runShooter(double aSpeed){
-        theTopShootingMotor.set(aSpeed);
-        theBottomShootingMotor.set(-aSpeed);
+        if(aSpeed >= 0.1) {
+            theShooterRunning = true;
+            theConveyorRunning = false;
+        }
+        if(theShooterRunning) {
+            theTopShootingMotor.set(aSpeed);
+            theBottomShootingMotor.set(-aSpeed);
+        }
     }    
     /*--------------------------------------------------------------------------*/
     
