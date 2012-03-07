@@ -4,9 +4,12 @@
  */
 package edu.wpi.first.wpilibj.templates;
 
+import edu.wpi.first.wpilibj.CANJaguar;
+import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.RobotDrive;
-import edu.wpi.first.wpilibj.Jaguar;
 import edu.wpi.first.wpilibj.SpeedController;
+import edu.wpi.first.wpilibj.can.CANNotInitializedException;
+import edu.wpi.first.wpilibj.can.CANTimeoutException;
 
 /**
  *
@@ -59,7 +62,7 @@ public class TPARobotDriver extends RobotDrive {
     }
    /*--------------------------------------------------------------------------*/
     
-       /*--------------------------------------------------------------------------*/
+   /*--------------------------------------------------------------------------*/
    /*
     * Author:  Marissa Beene
     * Date:    10/30/2011 (Marissa Beene)
@@ -99,6 +102,120 @@ public class TPARobotDriver extends RobotDrive {
 
     /*--------------------------------------------------------------------------*/
 
+    /*--------------------------------------------------------------------------*/
+    /*
+     * Author:  
+     * Date:    
+     * Purpose: 
+     * Inputs:  
+     * Outputs: 
+     */    
+    /*--------------------------------------------------------------------------*/
+    public void flipTankDrive(Joystick aLeftStick, Joystick aRightStick) {
+        if (aLeftStick == null || aRightStick == null) {
+            throw new NullPointerException("Null HID provided");
+        }
+        tankDrive(-aLeftStick.getY(), -aRightStick.getY());
+    }
     
+    public void flipArcadeDrive(Joystick aStick) {
+        if (aStick == null) {
+            throw new NullPointerException("Null HID provided");
+        }
+        arcadeDrive(-aStick.getY(), -aStick.getX());
+    }
+        /*--------------------------------------------------------------------------*/
+    /*
+     * Author:  Andrew Matsumoto
+     * Date:    2/3/12
+     * Purpose: To make sure that all the wheels are rotating at the same speed.
+     * Inputs:  None
+     * Outputs: None
+     */
     
+        static final int kFrontLeft_val = 0;            //The channel of the front left motor
+        static final int kFrontRight_val = 1;
+        static final int kRearLeft_val = 2;
+        static final int kRearRight_val = 3;
+        double wheelSpeeds[] = new double[kMaxNumberOfMotors];
+        double multipliers[] = new double[kMaxNumberOfMotors];
+        
+    public void TPAMecanumDrive_Polar(double magnitude, double direction, double rotation) {
+        double frontLeftSpeed, rearLeftSpeed, frontRightSpeed, rearRightSpeed;
+        // Normalized for full power along the Cartesian axes.
+        magnitude = limit(magnitude) * Math.sqrt(2.0);
+        // The rollers are at 45 degree angles.
+        double dirInRad = (direction + 45.0) * 3.14159 / 180.0;
+        double cosD = Math.cos(dirInRad);
+        double sinD = Math.sin(dirInRad);
+
+        
+        wheelSpeeds[kFrontLeft_val] = (sinD * magnitude + rotation);
+        wheelSpeeds[kFrontRight_val] = (cosD * magnitude - rotation);
+        wheelSpeeds[kRearLeft_val] = (cosD * magnitude + rotation);
+        wheelSpeeds[kRearRight_val] = (sinD * magnitude - rotation);
+
+        normalize(wheelSpeeds);
+
+        byte syncGroup = (byte)0x80;
+
+        m_frontLeftMotor.set(wheelSpeeds[kFrontLeft_val] * m_invertedMotors[kFrontLeft_val] * m_maxOutput*multipliers[kFrontLeft_val], syncGroup);
+        m_frontRightMotor.set(wheelSpeeds[kFrontRight_val] * m_invertedMotors[kFrontRight_val] * m_maxOutput*multipliers[kFrontRight_val], syncGroup);
+        m_rearLeftMotor.set(wheelSpeeds[kRearLeft_val] * m_invertedMotors[kRearLeft_val] * m_maxOutput*multipliers[kRearLeft_val], syncGroup);
+        m_rearRightMotor.set(wheelSpeeds[kRearRight_val] * m_invertedMotors[kRearRight_val] * m_maxOutput*multipliers[kRearRight_val], syncGroup);
+        
+        if (m_isCANInitialized) {
+            try {
+                CANJaguar.updateSyncGroup(syncGroup);
+            } catch (CANNotInitializedException e) {
+                m_isCANInitialized = false;
+            } catch (CANTimeoutException e) {}
+        }
+
+        if (m_safetyHelper != null) m_safetyHelper.feed();
+        }
+        
+        double speedSums[] = new double[kMaxNumberOfMotors];
+        int theCounter = 0;
+        
+    public void multiplierCalculator(double aFrontLeftSpeed, double aFrontRightSpeed, double aRearLeftSpeed, double aRearRightSpeed){
+
+        theCounter++;
+        speedSums[kFrontLeft_val]+=Math.abs(aFrontLeftSpeed);
+        speedSums[kFrontRight_val]+=Math.abs(aFrontRightSpeed);
+        speedSums[kRearLeft_val]+=Math.abs(aRearLeftSpeed);
+        speedSums[kRearRight_val]+=Math.abs(aRearRightSpeed);
+         
+        if(theCounter==5){
+            theCounter=0;
+            for(int j = 0; j < kMaxNumberOfMotors;j++){
+                speedSums[j]=speedSums[j]/5;
+            }
+            int ThePointer = 0;
+            for (int i = 1; i < 4; i++){
+                if (wheelSpeeds[i] > wheelSpeeds[ThePointer]){
+                    ThePointer = i;
+                }
+            }
+            for(int k =0; k< kMaxNumberOfMotors; k++){
+                if(wheelSpeeds[k]!=0 && wheelSpeeds[ThePointer]!=0){
+                    multipliers[k]=((speedSums[ThePointer]/speedSums[k])/(wheelSpeeds[ThePointer]/wheelSpeeds[k]));
+                    System.out.println("(" + speedSums[ThePointer] + "/" +speedSums[k] +")");
+                    System.out.println("(" + wheelSpeeds[ThePointer] + "/" +wheelSpeeds[k] +")");
+                }
+            }
+            for (int l = 0 ; l < kMaxNumberOfMotors; l++){
+                speedSums[l]=1;
+            }
+            for(int n = 0; n < 4; n++){
+                if(multipliers[n]> 1.2)
+                   multipliers[n] = 1.2;
+                else if(multipliers[n]<.8)
+                    multipliers[n]=.8;
+            }
+            for(int m = 0; m<4; m++){
+                System.out.println("the multiplier for the for the motor in position number " + m + " is " + multipliers[m]); 
+            }
+        }       
+    }
 }
