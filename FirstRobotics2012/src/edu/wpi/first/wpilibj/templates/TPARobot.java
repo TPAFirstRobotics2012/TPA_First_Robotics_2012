@@ -28,6 +28,7 @@ public class TPARobot extends IterativeRobot {
     static final double SHOOTING_SPEED_3 = 0.5;     // The speed of the shooter controlled by button 3
     static final double SHOOTING_SPEED_5 = 1.0;     // The speed of the shooter controlled by button 5
     static final double SHOOTING_SPEED_OFF = 0.0;   // Shooting speed, controlled by button 10
+    static final double THE_AUTONOMOUS_SHOOTING_SPEED = 1.0; //The speed the shooter shoots at in autonomous
     static final int AVERAGING_VALUE = 10;
     static final int UNINITIALIZED_DRIVE = 0;       // Value when no drive mode is selected
     static final int ARCADE_DRIVE = 1;              // Value when arcade mode is selected 
@@ -44,7 +45,12 @@ public class TPARobot extends IterativeRobot {
     static boolean left1ButtonPressable = true;     // Flag for pressablity of the trigger on the left joystick
     static boolean flipDriveDirection = false;      // Determines whether the robot is moving forward or backward
     static boolean conveyorMoving = false;          // Determines whether the conveyor is moving
+    static boolean inHybridMode;                    //Determine if we are in Hybrid Drive or just Autonomous Mode
     static boolean theRelayFlag = false;            // Is the relay on?
+    static boolean kinectButton5Pressable = true;   //Flag to determine whether Kinect Button 5 is pressed or not
+    static boolean inLoadingPosition = false;       //Flag to determine whether the ball loader is in ball loading position
+    static boolean inShootingPosition = true;       //"    "   "         "       "     "   "    "   "  "       "    "
+    static boolean kinectConnected;                 //Determines whether or not a Kinect is connected
     static double theJoystickSpeed = 0;             // Speed of shooters while Joystick controls speed
     static double shoot9ButtonSpeed = 0;            // Speed of shooters assigned to button 9 of shooting joystick        
     static double theShootingSpeed = 0.0;           // The actual speed the shooter is running
@@ -82,6 +88,7 @@ public class TPARobot extends IterativeRobot {
     static double theHybridDriveMagnitude;
     static double theHybridDriveDirection;
     static int theNumberCollected=0;
+    static int theNumberOfPlayers;
     
     AxisCamera theAxisCamera;                       // The camera
     DriverStationLCD theDriverStationLCD;           // Object representing the driver station  
@@ -103,7 +110,7 @@ public class TPARobot extends IterativeRobot {
     Relay theRelay;                                 // The Spike Relay
     KinectStick theLeftArm;                         // Kinect Driver's Left Arm
     KinectStick theRightArm;                        // Kinect Driver's Right Arm
-    
+    Kinect theKinect;                               //Creates a Kinect object
 
     
     /*--------------------------------------------------------------------------*/
@@ -182,8 +189,10 @@ public class TPARobot extends IterativeRobot {
         }
         
         //Stretches out your arms and gets them ready to work
-            theLeftArm = new KinectStick(1);
-            theRightArm = new KinectStick(2);
+            
+        theLeftArm = new KinectStick(1); //Initializes your arms as joysticks
+        theRightArm = new KinectStick(2);
+        inHybridMode = testForKinect(); //If the Kinect detects a player, returns true
             if (DEBUG == true) {
                 System.out.println("Arms Stretched");
             }
@@ -201,6 +210,8 @@ public class TPARobot extends IterativeRobot {
                 System.out.println("CAMERA set to false");
             }
         }
+        
+
         
         // Default the robot to not move
         theDriveDirection = 0;
@@ -243,9 +254,17 @@ public class TPARobot extends IterativeRobot {
         
         Watchdog.getInstance().feed();
         runShooter(0);
-        hybridDrive(theLeftArm, theRightArm);
-        if (DEBUG == true) {
-            System.out.println("Hybrid Drive Called");
+        if (inHybridMode == true){
+            hybridDrive(theLeftArm, theRightArm); //Drive in Hybrid Mode using your two arms if we are in Hybrid, when inHybridMode == true
+            if (DEBUG == true) {
+                System.out.println("Hybrid Drive Called");
+            }
+        }
+        else if (inHybridMode == false){
+            autonomousMode();  //Shoot the ball autonomously if we are not in Hybrid, but are in the autonomous period
+             if (DEBUG == true) {
+                System.out.println("Autonomous Mode Called");
+            }
         }
     }
     /*--------------------------------------------------------------------------*/
@@ -778,6 +797,86 @@ public class TPARobot extends IterativeRobot {
         }
     }
     /*--------------------------------------------------------------------------*/
+    /*--------------------------------------------------------------------------*/
+    /*
+     * Author:  Sumbhav Sethia
+     * Date:    2/16/2012
+     * Purpose: Test to see whether or not a Kinect is connected to the Robot
+     * Inputs:  
+     * Outputs: a boolean, true if Kinect is connected and false if it is not
+     */    
+    
+    /*--------------------------------------------------------------------------*/
+        public boolean testForKinect() {
+            theKinect = Kinect.getInstance();
+            theNumberOfPlayers = theKinect.getNumberOfPlayers();
+            if (theNumberOfPlayers == 0){
+                kinectConnected = false;   
+               }
+                return kinectConnected;
+        }
+  /*---------------------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------*/
+    /*
+     * Author:  Sumbhav Sethia
+     * Date:    2/16/2012
+     * Purpose: Drive and work in Hybrid Mode
+     * Inputs:  Two Arms
+     * Outputs: 
+     */   
+    /*--------------------------------------------------------------------------*/
+        public void hybridDrive(KinectStick aLeftArm, KinectStick aRightArm){
+            theRobotDrive.tankDrive(aLeftArm.getY()*.33, aRightArm.getY()*.33); //Drive in tank using  your two arms as joysticks
+            if(aRightArm.getRawButton(5) && kinectButton5Pressable) {  // If you press Kinect button 5 and it is currently pressable
+                inLoadingPosition = !inLoadingPosition; //Flip this
+                inShootingPosition = !inShootingPosition; //Flip this
+                kinectButton5Pressable = !kinectButton5Pressable; //Make it so that the button is not pressable again immediately
+                if(inLoadingPosition) { //If the loader is down, or not in shooter
+                   theRelay.set(Relay.Value.kForward);  //Places the ball in shooting position
+               }
+               else if (!inShootingPosition) { //If the loader is up, or not in position to receive a ball
+                   theRelay.set(Relay.Value.kOff); //Gets the loader ready to receive another ball
+               }      
+            }
+            else {
+                theDriverStationLCD.println(DriverStationLCD.Line.kUser3, 1, "                  ");
+                theDriverStationLCD.updateLCD();
+                kinectButton5Pressable = true; //Make it so that you can press button 5 again
+            }
+        }
+    /*---------------------------------------------------------------------------------------*/
+
+        /*--------------------------------------------------------------------------*/
+    /*
+     * Author: Sumbhav Sethia
+     * Date:   2/16/2012
+     * Purpose: Autonomous Mode (Shoot the ball only) 
+     * Inputs:  
+     * Outputs: 
+     */    
+    
+    /*--------------------------------------------------------------------------*/
+        public void autonomousMode(){
+                theTopShootingMotor.set(THE_AUTONOMOUS_SHOOTING_SPEED); //Turn the Shooting Motors on
+                theBottomShootingMotor.set(-(THE_AUTONOMOUS_SHOOTING_SPEED));
+                Timer.delay(0.5);
+                theRelay.set(Relay.Value.kForward); //Place a ball in the shooter
+                Timer.delay(1.0); //Leave the loader up for a second, so that the ball can be shot
+                theRelay.set(Relay.Value.kOff); //Get the loader ready to receive another ball
+        }
+
+        /*--------------------------------------------------------------------------*/
+    /*
+     * Author:  
+     * Date:    
+     * Purpose: 
+     * Inputs:  
+     * Outputs: 
+     */    
+    
+    /*--------------------------------------------------------------------------*/
+
+}
         
     /*--------------------------------------------------------------------------*/
     /*
@@ -789,5 +888,5 @@ public class TPARobot extends IterativeRobot {
      */    
     
     /*--------------------------------------------------------------------------*/
-}
+
     
