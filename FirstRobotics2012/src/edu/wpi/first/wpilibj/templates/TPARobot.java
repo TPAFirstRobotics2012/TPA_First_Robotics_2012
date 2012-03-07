@@ -8,12 +8,9 @@
 package edu.wpi.first.wpilibj.templates;
 
 
-import edu.wpi.first.wpilibj.DriverStationLCD;
-import edu.wpi.first.wpilibj.IterativeRobot;
-import edu.wpi.first.wpilibj.Joystick;
-import edu.wpi.first.wpilibj.Encoder;
-import edu.wpi.first.wpilibj.Watchdog;
+import edu.wpi.first.wpilibj.*;
 import edu.wpi.first.wpilibj.camera.AxisCamera;
+import edu.wpi.first.wpilibj.Compressor;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -23,32 +20,98 @@ import edu.wpi.first.wpilibj.camera.AxisCamera;
  * directory.
  */
 public class TPARobot extends IterativeRobot {
+    static final boolean DEBUG = true;              // Debug Trigger
+    static final boolean CAMERA = false;            // Camera Trigger
+    static final double STOP_VALUE = 0.1;           // Value sent to each motor when the robot is stopping
+    static final double CONVEYOR_SPEED = 1.0;       // The speed the conveyor motor will be set to move
+    static final double SHOOTING_SPEED_4 = 0.3;     // The speed of the shooter controlled by button 4
+    static final double SHOOTING_SPEED_3 = 0.5;     // The speed of the shooter controlled by button 3
+    static final double SHOOTING_SPEED_5 = 1.0;     // The speed of the shooter controlled by button 5
+    static final double SHOOTING_SPEED_OFF = 0.0;   // Shooting speed, controlled by button 10
 
-    AxisCamera theAxisCamera;                                   // The camera
-    DriverStationLCD theDriverStationLCD;                       // Object representing the driver station   
-    // Drive mode selection
+    static double theJoystickSpeed = 0;             // Speed of shooters while Joystick controls speed
+    static double shoot9ButtonSpeed = 0;            // Speed of shooters assigned to button 9 of shooting joystick
+    static boolean joystickRunsShooter = false;     // Use the joystick to control the shooter  at a gradient
+    static boolean joystickRanShooter= false;       // True if the joystick used to run the shooter
+    static final int theAveragingValue = 10;        
+    double theShootingSpeed = 0.0;                  // The actual speed the shooter is running
+
+    static final int AVERAGING_VALUE = 10;
+    static final int UNINITIALIZED_DRIVE = 0;       // Value when no drive mode is selected
+    static final int ARCADE_DRIVE = 1;              // Value when arcade mode is selected 
+    static final int TANK_DRIVE = 2;                // Value when tank drive is selected
+    static boolean button6Pressed = false;      // True if the joystick used to run the shooter
+
+    static boolean shoot2ButtonPressable = true;    // Flag for pressability of button 6 on the shooting joystick
+    static boolean shoot4ButtonPressable = true;    // Flag for pressability of button 4 on the shooting joystick 
+    static boolean shoot3ButtonPressable = true;    // Flag for pressability of button 3 on the shooting joystick 
+    static boolean shoot5ButtonPressable = true;    // Flag for pressability of button 5 on the shooting joystick
+    static boolean shoot6ButtonPressable = true;    // Flag for pressability of button 6 on the shooting joystick
+    static boolean shoot7ButtonPressable = true;    // Flag for pressability of button 7 on the shooting joystick
+    static boolean shoot8ButtonPressable = true;    // Flag for pressability of button 8 on the shooting joystick
+    static boolean left1ButtonPressable = true;     // Flag for pressablity of the trigger on the left joystick
+    static boolean flipDriveDirection = false;      // Determines whether the robot is moving forward or backward
+    static boolean conveyorMoving = false;          // Determines whether the conveyor is moving
+    static boolean theRelayFlag = false;            // Is the relay on?
+    static double theAccumulatedDistanceLeft;                                                                                                            //From Here                                                          
+    static double theAveragedDistancePreTruncationLeft; //The Average distance returned by the Ultrasonic before it is truncated to 2 decimal places      /
+    static int theAverageDistanceTruncationStep1Left;   //variable above multiplied by 100 to remove all unecessary digits                                /    
+    static double theAverageDistanceTruncatedLeft;      //The Average Distance truncated to 2 decimal places                                              /          
+    static double theDistanceLeft;                      // The distance returned by the ultrasonic sensor                                                 /
+    static int theDistancesCollectedLeft;                                                                                                                 // To Here are for the left ultrasonic    
+    static double theAccumulatedDistanceRight;                                                                                                             //Same For the Right UltraSonic                                                                           
+    static double theAveragedDistancePreTruncationRight; //The Average distance returned by the Ultrasonic before it is truncated to 2 decimal places      /
+    static int theAverageDistanceTruncationStep1Right;   //variable above multiplied by 100 to remove all unecessary digits                                /    
+    static double theAverageDistanceTruncatedRight;      //The Average Distance truncated to 2 decimal places                                              /
+    static double theDistanceRight;                      // The distance returned by the ultrasonic sensor                                                 /
+    static int theDistancesCollectedRight;                                                                                                                 // To here                                                
+    static double theAccumulatedDistanceFront;                                                                                                             //And for the Front one        
+    static double theAveragedDistancePreTruncationFront; //The Average distance returned by the Ultrasonic before it is truncated to 2 decimal places      / 
+    static int theAverageDistanceTruncationStep1Front;   //variable above multiplied by 100 to remove all unecessary digits                                /   
+    static double theAverageDistanceTruncatedFront;      //The Average Distance truncated to 2 decimal places                                              /
+    static double theDistanceFront;                      // The distance returned by the ultrasonic sensor                                                 /
+    static int theDistancesCollectedFront;                                                                                                                 //To here            
+    static double theMaxSpeed;                      // Multiplier for speed, determined by Z-Axis on left stick
+    static double theFrontLeftOutput;               // The output sent to the front left motor
+    static double theRearLeftOutput;                // The output sent to the rear left motor
+    static double theFrontRightOutput;              // The output sent to the front right motor
+    static double theRearRightOutput;               // The output sent to the rear right motor
+    static double theDriveDirection;                // Direction the robot will move
+    static double theDriveMagnitude;                // Speed the robot will move at
+    static double theDriveRotation;                 // Value the robot will rotate
+    static double theSumFrontLeftSpeed =0;
+    static double theSumFrontRightSpeed =0;
+    static double theSumRearLeftSpeed =0;
+    static double theSumRearRightSpeed =0;
+    static double theHybridDriveRotation;
+    static double theHybridDriveMagnitude;
+    static double theHybridDriveDirection;
+    static int theNumberCollected=0;
+    
+    AxisCamera theAxisCamera;                       // The camera
+    DriverStationLCD theDriverStationLCD;           // Object representing the driver station  
+    Encoder theFrontLeftEncoder;                    // The front left E4P
+    Encoder theRearLeftEncoder;                     // The rear left E4P
+    Encoder theFrontRightEncoder;                   // The front right E4P
+    Encoder theRearRightEncoder;                    // The rear right E4P
+    Jaguar theConveyorMotor;                        // The motor on the conveyor belt
+    Jaguar theTopShootingMotor;                     // The shooting motor on the top
+    Jaguar theBottomShootingMotor;                  // The shooting motor on the bottom
+    Joystick theRightStick;                         // Right joystick
+    Joystick theLeftStick;                          // Left joystick
+    Joystick theShootingStick;                      // The joystick used for all aspects of the shooting system
+    Solenoid theWedgeUp;                            //This Solenoid moves the wedge up and holds the ball in place
+    TPARobotDriver theRobotDrive;                   // Robot Drive System
     int theDriveMode;                                           // The actual drive mode that is currently selected.
-    static final int UNINITIALIZED_DRIVE = 0;                   // Value when no drive mode is selected
-    static final int ARCADE_DRIVE = 1;                          // Value when arcade mode is selected 
-    static final int TANK_DRIVE = 2;                            // Value when tank drive is selected
-    public double theMaxSpeed;                                  // Multiplier for speed, determined by Z-Axis on left stick
-    static final boolean DEBUG = true;                          // Debug Trigger
-    static final double STOP_VALUE = 0.1;                       // Value sent to each motor when the robot is stopping
-    double theFrontLeftOutput;                                  // The output sent to the front left motor
-    double theRearLeftOutput;                                   // The output sent to the rear left motor
-    double theFrontRightOutput;                                 // The output sent to the front right motor
-    double theRearRightOutput;                                  // The output sent to the rear right motor
-    Encoder theFrontLeftEncoder;                                // The encoder at the front left motor
-    Encoder theRearLeftEncoder;                                 // The encoder at the rear left motor
-    Encoder theFrontRightEncoder;                               // The encoder at the front right motor
-    Encoder theRearRightEncoder;                                // The encoder at the rear right motor
-    Joystick theRightStick;                                     // Right joystick
-    Joystick theLeftStick;                                      // Left joystick
-    TPARobotDriver theRobotDrive;                               // Robot Drive System
-    double theDriveDirection;                                   // Direction the robot will move
-    double theDriveMagnitude;                                   // Speed the robot will move at
-    double theDriveRotation;                                    // Value the robot will rotate
-   
+    Compressor theCompressor;                       // The air compressor
+    TPAUltrasonicAnalogSensor theUltrasonicSensor;  // The ultrasonic sensor
+    TPAUltrasonicAnalogSensor theUltrasonicSensorLeft;  // The ultrasonic sensor Left
+    TPAUltrasonicAnalogSensor theUltrasonicSensorRight;  // The ultrasonic sensor Right
+    TPAUltrasonicAnalogSensor theUltrasonicSensorFront;  // The ultrasonic sensor Front
+    Relay theRelay;                                 // The Spike Relay
+    KinectStick theLeftArm;                         // Kinect Driver's Left Arm
+    KinectStick theRightArm;                        // Kinect Driver's Right Arm
+    
 
     
     /*--------------------------------------------------------------------------*/
@@ -63,9 +126,10 @@ public class TPARobot extends IterativeRobot {
      */
     public void robotInit() {
                
-        // Define joysticks being used at USB port #1 and USB port #2 on the Drivers Station
+        // Define joysticks being used at USB port #1, USB port #2, and USB port #3 on the Drivers Station
 	theRightStick = new Joystick(1);
 	theLeftStick = new Joystick(2);
+        theShootingStick = new Joystick(3);
         if (DEBUG == true){
            System.out.println("The Joysticks constructed successfully"); 
         }
@@ -76,43 +140,77 @@ public class TPARobot extends IterativeRobot {
             System.out.println("theRobotDrive constructed successfully");
         }
         
-/*
-        // Defines four E4P Motion Sensors at ports 1,2,3,4,5,6,7, and 8
-        theFrontLeftEncoder = new Encoder(1,2);
-        theRearLeftEncoder = new Encoder(3,4);
-        theFrontRightEncoder = new Encoder(5,6);
-        theRearRightEncoder = new Encoder(7,8);
+        //Define Solenoids used to move ball into shooter
+        theWedgeUp = new Solenoid(2);
+
+        //Defines four E4P Motion Sensors at ports 1,2,3,4,5,6,7, and 8
+       /* theFrontLeftEncoder = new Encoder(2,1);
+        theFrontLeftEncoder.start();
+        theRearLeftEncoder = new Encoder(6,5);
+        theRearLeftEncoder.start();
+        theFrontRightEncoder = new Encoder(4,3);
+        theFrontRightEncoder.start();
+        theRearRightEncoder = new Encoder(8,7);
+        theRearRightEncoder.start();
         if (DEBUG == true){
             System.out.println("The Encoders constructed successfully");
+        } */
+        
+        // Initialize the Conveyor belt motor at port 5
+        theConveyorMotor = new Jaguar(5);
+        if (DEBUG == true){
+            System.out.println("The Conveyor Motor constructed successfully");
         }
- */
-
+        
+        // Intialize the two shooting motors at ports 6 and 7
+        theTopShootingMotor = new Jaguar(6);
+        theBottomShootingMotor = new Jaguar (7);
+        if (DEBUG == true){
+            System.out.println("The Shooting Motors constructed successfully");
+        }
+        
+        // Initialize the Ultrasonic sensors at analog port 1,2,3
+        theUltrasonicSensorLeft = new TPAUltrasonicAnalogSensor(1);
+         theUltrasonicSensorRight = new TPAUltrasonicAnalogSensor(4);
+          theUltrasonicSensorFront = new TPAUltrasonicAnalogSensor(3);
+        if (DEBUG == true){
+            System.out.println("The ultrasonic sensors constructed successfully");
+        }
+        
         //Initialize the DriverStationLCD
         theDriverStationLCD = DriverStationLCD.getInstance();
-        if (DEBUG) {
+        if (DEBUG == true) {
             System.out.println("DriverStationLCD initialized");
         }
         
+        //Initialize the Relay
+        theRelay = new Relay(2);
+        if (DEBUG == true) {
+            System.out.println("Relay initialized");
+        }
+        
+        //Stretches out your arms and gets them ready to work
+            theLeftArm = new KinectStick(1);
+            theRightArm = new KinectStick(2);
+            if (DEBUG == true) {
+                System.out.println("Arms Stretched");
+            }
         //Initialize the AxisCamera
-        theAxisCamera = AxisCamera.getInstance(); 
-        theAxisCamera.writeResolution(AxisCamera.ResolutionT.k320x240);        
-        theAxisCamera.writeBrightness(50);
-        if (DEBUG) {
-            System.out.println("AxisCamera initialized");
+        if (CAMERA == true){
+            theAxisCamera = AxisCamera.getInstance(); 
+            theAxisCamera.writeResolution(AxisCamera.ResolutionT.k320x240);        
+            theAxisCamera.writeBrightness(50);
+            if (DEBUG == true) {
+                System.out.println("AxisCamera initialized");
+            }
+        }
+        else {
+            if (DEBUG == true){
+                System.out.println("CAMERA set to false");
+            }
         }
         
-        // Initialize the Drive Mode to Uninitialized
-        theDriveMode = UNINITIALIZED_DRIVE;
-        
-        // Default the robot to not move
-        theDriveDirection = 0;
-        theDriveMagnitude = 0;
-        theDriveRotation = 0;
-        if (DEBUG == true){
-            System.out.println("The robot set to not move");
-        }
-        
-       
+                
         if (DEBUG == true){
         System.out.println("RobotInit() completed.\n");
         }
@@ -142,12 +240,14 @@ public class TPARobot extends IterativeRobot {
      * Inputs:  None
      * Outputs: None
      */
-
     public void autonomousPeriodic() {
         
         Watchdog.getInstance().feed();
-        theDriverStationLCD.println(DriverStationLCD.Line.kMain6, 1, "Autonomous Mode Called");
-        theDriverStationLCD.updateLCD();    //Displays a message to DriverStationLCD when entering Autonomous mode
+        runShooter(0);
+        hybridDrive(theLeftArm, theRightArm);
+        if (DEBUG == true) {
+            System.out.println("Hybrid Drive Called");
+        }
     }
     /*--------------------------------------------------------------------------*/
     
@@ -177,23 +277,65 @@ public class TPARobot extends IterativeRobot {
         
         //Get the image from the Axis Camera
         DriverStationLCD.getInstance().updateLCD();
-        if(DEBUG) {
+        if(DEBUG == true) {
             System.out.println("getCameraImage called");
         }
-        
+
         // Drive the robot with FPS control
         driveRobot();
         if(DEBUG == true){
             System.out.println("driveRobot called");
         }
         
-        // Brake the robot if no joysick input.
-        //brakeOnNeutral();
-        //if(DEBUG == true) {
-        //    System.out.println("brakeOnNeutral called");
-        //}
+        // Run the conveyor belt
+        runConveyor(theShootingStick, CONVEYOR_SPEED);
+        if(DEBUG == true){
+            System.out.println("runConveyor called");
+        }
         
-    }
+        // Display the speed of each wheel
+        /*displaySpeed();
+        if (DEBUG == true){
+            System.out.println("displaySpeed called");
+        } */
+        
+        // Run the shooter
+        runShooter(determineShootingSpeed(theShootingStick));
+        if (DEBUG == true){
+            System.out.println("runShooter called");
+        }
+        
+        // Run the Ultrasonic sensors.FRONT MUST ALWAYS BE THE LAST TO RUN!!!
+        runUltrasonicSensorRight(theUltrasonicSensorRight);
+        runUltrasonicSensorLeft(theUltrasonicSensorLeft);
+        
+        runUltrasonicSensorFront(theUltrasonicSensorFront);
+        if (DEBUG == true){
+            System.out.println("runUltrasonicSensorLeft, Right, and Front called");
+        } 
+        
+        dropBallIntoShooter(theShootingStick);
+        if (DEBUG == true){
+            System.out.println("dropBallintoShooter called");
+        }
+        
+        determineJoystick();
+        if (DEBUG == true){
+            System.out.println("determineJoystick called");
+        }
+        
+        shootWithJoystick(theShootingStick);
+        if (DEBUG == true){
+            System.out.println("shootWithJoystick called");
+        }
+/*
+        // Brake the robot if no joysick input.
+        brakeOnNeutral();
+        if(DEBUG == true) {
+            System.out.println("brakeOnNeutral called");
+        } */
+        
+       }
     /*--------------------------------------------------------------------------*/
     
     
@@ -207,49 +349,476 @@ public class TPARobot extends IterativeRobot {
      * Inputs:  None
      * Outputs: None
      */    
-    public void driveRobot() {
-        theDriveDirection = theLeftStick.getDirectionDegrees(); // Set the direction to the value of the left stick
-        theDriveMagnitude = theLeftStick.getMagnitude();    // Set the magnitude to the value of the left stick
-        theDriveRotation = ((180-theRightStick.getDirectionDegrees())/180); // Set the rotation to the value of the right stick
-        theRobotDrive.mecanumDrive_Polar(theDriveMagnitude, theDriveDirection, theDriveRotation);
+     public void driveRobot() {
+        // determine if tank or arcade mode, based upon position of "Z" wheel on kit joystick
+        if (theRightStick.getZ() <= 0) {    // Logitech Attack3 has z-polarity reversed; up is negative
+            // use arcade drive
+            if (DEBUG == true){
+                System.out.println("theRightStick.getZ called" );
+
+            }
+            if(driveBackwards(theLeftStick)) {
+                theRobotDrive.flipArcadeDrive(theRightStick);	// drive with arcade style (use right stick)
+            }
+            else {
+                theRobotDrive.arcadeDrive(theRightStick, false);
+            }
+            if (theDriveMode != ARCADE_DRIVE) {
+            // if newly entered arcade drive, print out a message
+            System.out.println("Arcade Drive\n");
+            theDriveMode = ARCADE_DRIVE;
+            }
+        } else {
+            // use tank drive
+            if(driveBackwards(theLeftStick)) {            
+                theRobotDrive.flipTankDrive(theLeftStick, theRightStick);	// drive with tank style
+            }
+            else {
+                theRobotDrive.tankDrive(theLeftStick, theRightStick);
+            }
+            if (theDriveMode != TANK_DRIVE) {
+                // if newly entered tank drive, print out a message
+                System.out.println("Tank Drive\n");
+                theDriveMode = TANK_DRIVE;
+            }
+        }
     }
     /*--------------------------------------------------------------------------*/
+                    
+    
+    /*--------------------------------------------------------------------------*/
+    /*
+     * Author:  Gennaro De Luca, Marissa Beene
+     * Date:    11/26/2011 (Gennaro De Luca)
+     * Purpose: To determine the speed multiplier based on the "Z" wheel on 
+     *          the left joystick. Responds as a gradient. If the "Z" wheel on the
+     *          joystick gets a higher value, the robot will move faster.
+     * Inputs:  None
+     * Outputs: None
+     */    
+    public void setMaxSpeed(){   
+        theMaxSpeed = (theLeftStick.getZ() - 1.0)/(-2.0); // z-axis is inverted
+        theRobotDrive.setMaxSpeed(theMaxSpeed); // sets the multiplier
+    }
+    /*--------------------------------------------------------------------------*/
+
+
+    /*--------------------------------------------------------------------------*/
+    /*
+     * Author:  Daniel Hughes
+     * Date:    1/29/12
+     * Purpose: Display the average speed output from the encoders.
+     * Inputs:  None
+     * Outputs: None
+     */    
+    public void displaySpeed(){
+    
+        double theFrontLeftSpeed = theFrontLeftEncoder.getRate();
+        double theRearLeftSpeed = theRearLeftEncoder.getRate();
+        double theFrontRightSpeed = theFrontRightEncoder.getRate();
+        double theRearRightSpeed = theRearRightEncoder.getRate();
+
+        theSumFrontLeftSpeed += theFrontLeftSpeed;
+        theSumRearLeftSpeed += theRearLeftSpeed;
+        theSumFrontRightSpeed += theFrontRightSpeed;
+        theSumRearRightSpeed += theRearRightSpeed;
+        theNumberCollected++;
+
+        if(theNumberCollected == 100){
+            theNumberCollected =0;
+            String theAverageFrontLeftSpeed = "FLS: " + theSumFrontLeftSpeed/100;
+            String theAverageRearLeftSpeed = "RLS: " + theSumRearLeftSpeed/100;
+            String theAverageFrontRightSpeed = "FRS: " + theSumFrontRightSpeed/100;
+            String theAverageRearRightSpeed = "RRS: " + theSumRearRightSpeed/100; 
+
+            theDriverStationLCD.println(DriverStationLCD.Line.kMain6, 1 , theAverageFrontLeftSpeed );
+            theDriverStationLCD.println(DriverStationLCD.Line.kUser2, 1 , theAverageRearLeftSpeed );
+            theDriverStationLCD.println(DriverStationLCD.Line.kUser3, 1 , theAverageFrontRightSpeed );
+            //theDriverStationLCD.println(DriverStationLCD.Line.kUser4, 1 , theAverageRearRightSpeed );
+            theDriverStationLCD.updateLCD();
+
+            theSumFrontLeftSpeed=0;
+            theSumRearLeftSpeed=0;
+            theSumFrontRightSpeed=0;
+            theSumRearRightSpeed=0;
+        } 
+    }
+    /*--------------------------------------------------------------------------*/
+
+
+    /*--------------------------------------------------------------------------*/
+    /*
+     * Author: Andrew Matsumoto
+     * Date: 1/26/12   
+     * Purpose: decides whether the button to make the direction and rotation 
+     * opposite of what they are originally is pressed 
+     * Inputs:  
+     * Outputs: the direction and the rotation opposite of the original.
+     */  
+    public boolean driveBackwards(Joystick aStick){
+        if (left1ButtonPressable  && aStick.getRawButton(1)){
+            flipDriveDirection = !flipDriveDirection; // if flip is false, make it true and vice versa.
+            left1ButtonPressable = false;
+        }
+        if (!aStick.getRawButton(1)){
+          left1ButtonPressable = true;  
+        }
+        return flipDriveDirection;
+    }
+    /*--------------------------------------------------------------------------*/
+
+    
+    /*--------------------------------------------------------------------------*/
+    /*
+     * Author:  Marissa Beene
+     * Date:    1/29/12
+     * Purpose: To run a conveyor belt and allow for it to be turned on and off with
+     *          a button press
+     * Inputs:  Joystick aStick - the joystick that runs the conveyor
+     *          double aSpeed - the speed to run the conveyor at
+     * Outputs: None
+     */    
+    public void runConveyor(Joystick aStick, double aSpeed){
+        if(shoot2ButtonPressable && aStick.getRawButton(2)){ // Toggle conveyor if the button is pressed
+            conveyorMoving = !conveyorMoving;
+            shoot2ButtonPressable = false;
+        }
+        if(!aStick.getRawButton(2)){ // On button release, allow it to be pressed again
+            shoot2ButtonPressable = true;
+        }
+        if(conveyorMoving) {
+            theConveyorMotor.set(aSpeed);
+        }
+        else if (!conveyorMoving) {
+            theConveyorMotor.set(0);
+        }
+    }
+    /*--------------------------------------------------------------------------*/
+
+    
+    /*--------------------------------------------------------------------------*/
+    /*
+     * Author:  Marissa Beene
+     * Date:    2/4/12
+     * Purpose: To run a shooter with two motors controlling four wheels. One motor
+     *          will run counterclockwise, the other will run clockwise.
+     * Inputs:  double aSpeed - the speed the motors will run in
+     * Outputs: None
+     */    
+    public void runShooter(double aSpeed){
+        theTopShootingMotor.set(aSpeed);
+        theBottomShootingMotor.set(-aSpeed);
+    }    
+    /*--------------------------------------------------------------------------*/
+    
+    
+    /*--------------------------------------------------------------------------*/
+    /*
+     * Author:  Marissa Beene
+     * Date:    2/4/12, 2/16/2012 (Gennaro)
+     * Purpose: To determine the speed at which the wheels on the shooter will run.
+     *          The speeds are controlled by buttons 4, 3, and 5 on the Joystick.
+     * Inputs:  Joystick aStick - the joystick which controls the speed
+     * Outputs: double theShootingSpeed - the speed the shooter will run at
+     */    
+    public double determineShootingSpeed(Joystick aStick){
+        if(aStick.getRawButton(4)){
+            theShootingSpeed = SHOOTING_SPEED_4;
+            joystickRunsShooter = false;
+            joystickRanShooter = false;
+            button6Pressed = false;
+        }
+        if(aStick.getRawButton(3)){
+            theShootingSpeed = SHOOTING_SPEED_3;
+            joystickRunsShooter = false;
+            joystickRanShooter = false;
+            button6Pressed = false;
+        }
+        if(aStick.getRawButton(5)){
+            theShootingSpeed = SHOOTING_SPEED_5;
+            joystickRunsShooter = false;
+            joystickRanShooter = false;
+            button6Pressed = false;
+        }
+        if(aStick.getRawButton(9)) {
+            theShootingSpeed = shoot9ButtonSpeed;
+            joystickRunsShooter = false;
+            joystickRanShooter = false;
+            button6Pressed = false;
+        }
+        if(aStick.getRawButton(10)) {
+            theShootingSpeed = SHOOTING_SPEED_OFF;
+            joystickRunsShooter = false;
+            joystickRanShooter = false;
+            button6Pressed = false;
+        }
+        return theShootingSpeed;
+    }
+    /*--------------------------------------------------------------------------*/
+        
+    
+    /*--------------------------------------------------------------------------*/
+    /*
+     * Author:  Marissa Beene
+     * Date:    2/4/2012,3/5/2012 (Sumbhav Sethia)
+     * Purpose: To run the ultrasonic sensor. A press of button 8 toggles it on 
+     *          and off.
+     * Inputs:  TPAUltrasonicAnalogSensor aSensor - the ultrasonic sensor
+     * Outputs: 
+     */
+    public void runUltrasonicSensorLeft(TPAUltrasonicAnalogSensor aSensor){
+        // Read in distance and add to an accumulator
+        theDistanceLeft = aSensor.getDistance();
+        theAccumulatedDistanceLeft = theAccumulatedDistanceLeft + theDistanceLeft;
+        theDistancesCollectedLeft = theDistancesCollectedLeft + 1;
+        // If enough distances have been collected, print the average value out and restart
+        if (theDistancesCollectedLeft == AVERAGING_VALUE){
+            theAveragedDistancePreTruncationLeft = theAccumulatedDistanceLeft/theDistancesCollectedLeft;
+            theAverageDistanceTruncationStep1Left = (int) (theAveragedDistancePreTruncationLeft * 100);
+            theAverageDistanceTruncatedLeft = theAverageDistanceTruncationStep1Left / 100.00;
+            
+            theDriverStationLCD.println(DriverStationLCD.Line.kUser4,1, "Left: " + theAverageDistanceTruncatedLeft);
+            //theDriverStationLCD.updateLCD();
+            theAccumulatedDistanceLeft = 0;
+            theDistancesCollectedLeft = 0;
+        }
+        
+        if(DEBUG == true){
+            System.out.println("Left Sensor Enabled");
+        }
+    }
+     /*--------------------------------------------------------------------------*/
+    /*
+     * Author:  Marissa Beene/Sumbhav Sethia
+     * Date:    3/5/2012
+     * Purpose: To run the ultrasonic sensor. A press of button 8 toggles it on 
+     *          and off.
+     * Inputs:  TPAUltrasonicAnalogSensor aSensor - the ultrasonic sensor
+     * Outputs: 
+     */
+    public void runUltrasonicSensorRight(TPAUltrasonicAnalogSensor aSensor){
+        // Read in distance and add to an accumulator
+        theDistanceRight = aSensor.getDistance();
+        theAccumulatedDistanceRight = theAccumulatedDistanceRight + theDistanceRight;
+        theDistancesCollectedRight = theDistancesCollectedRight + 1;
+        // If enough distances have been collected, print the average value out and restart
+        if (theDistancesCollectedRight == AVERAGING_VALUE){
+            theAveragedDistancePreTruncationRight = theAccumulatedDistanceRight/theDistancesCollectedRight;
+            theAverageDistanceTruncationStep1Right = (int) (theAveragedDistancePreTruncationRight * 100);
+            theAverageDistanceTruncatedRight = theAverageDistanceTruncationStep1Right / 100.00;
+            
+            theDriverStationLCD.println(DriverStationLCD.Line.kUser5,1, "Right: " + theAverageDistanceTruncatedRight);
+           // theDriverStationLCD.updateLCD();
+            theAccumulatedDistanceRight = 0;
+            theDistancesCollectedRight = 0;
+        }
+        
+        if(DEBUG == true){
+            System.out.println("Right Sensor Enabled");
+        }
+    }
+     /*--------------------------------------------------------------------------*/
+    /*
+     * Author:  Marissa Beene/Sumbhav Sethia
+     * Date:    3/5/2012
+     * Purpose: To run the ultrasonic sensor. A press of button 8 toggles it on 
+     *          and off.
+     * Inputs:  TPAUltrasonicAnalogSensor aSensor - the ultrasonic sensor
+     * Outputs: 
+     */
+    public void runUltrasonicSensorFront(TPAUltrasonicAnalogSensor aSensor){
+        // Read in distance and add to an accumulator
+        theDistanceFront = aSensor.getDistance();
+        theAccumulatedDistanceFront = theAccumulatedDistanceFront + theDistanceFront;
+        theDistancesCollectedFront = theDistancesCollectedFront + 1;
+        // If enough distances have been collected, print the average value out and restart
+        if (theDistancesCollectedFront == AVERAGING_VALUE){
+            theAveragedDistancePreTruncationFront = theAccumulatedDistanceFront/theDistancesCollectedFront;
+            theAverageDistanceTruncationStep1Front = (int) (theAveragedDistancePreTruncationFront * 100);
+            theAverageDistanceTruncatedFront = theAverageDistanceTruncationStep1Front / 100.00;
+            
+            theDriverStationLCD.println(DriverStationLCD.Line.kUser6,1, "Front: " + theAverageDistanceTruncatedFront);
+            theDriverStationLCD.updateLCD();
+            theAccumulatedDistanceFront = 0;
+            theDistancesCollectedFront = 0;
+        }
+        
+        if(DEBUG == true){
+            System.out.println("Front Sensor Enabled");
+        }
+    }
+    /*--------------------------------------------------------------------------*/
+    /* 
+     * Author:  Sumbhav Sethia
+     * Date:    1/29/2012
+     * Purpose: To drop one and only one ball into the shooter mechanism
+     * Inputs:  Joystick aStick
+     * Outputs: None
+     */        
+    public void dropBallIntoShooter(Joystick aStick) {
+        /* if(aStick.getRawButton(1)) {
+            theRelay.set(Relay.Value.kForward);
+        }            
+        if(aStick.getRawButton(11)) {
+            theRelay.set(Relay.Value.kOff);
+        } */
+        if(aStick.getRawButton(1)) {        //Throws ball into shooter
+            if(DEBUG == true) {
+                theDriverStationLCD.println(DriverStationLCD.Line.kUser5, 1, "Shooter Fired");
+                theDriverStationLCD.updateLCD();
+            }
+            if(theRelayFlag) {
+                theRelay.set(Relay.Value.kForward);
+                theRelayFlag = false;
+            }            
+        } 
+        else if(!aStick.getRawButton(1)) {
+            if(!theRelayFlag) {
+                theRelay.set(Relay.Value.kOff);
+                theRelayFlag = true;
+            }
+            theDriverStationLCD.println(DriverStationLCD.Line.kUser5, 1, "               ");
+            theDriverStationLCD.updateLCD();
+        } 
+    }
+    
+    /*--------------------------------------------------------------------------*/
+    /*
+     * Author:  Sumbhav Sethia and Gennaro De Luca
+     * Date:    2/11/2012, 2/12/2012
+     * Purpose: Hybrid Mode Drive
+     * Inputs:  Two Arms
+     * Outputs: None
+     */    
+    public void hybridDrive(KinectStick aLeftArm, KinectStick aRightArm) {
+        theHybridDriveRotation = aLeftArm.getY();
+        theHybridDriveMagnitude = aRightArm.getY();
+        if(aRightArm.getRawButton(3)){
+            theHybridDriveDirection = -90;
+        }
+        else if(aLeftArm.getRawButton(4)){
+            theHybridDriveDirection = 90;
+        }
+        else if(!(aLeftArm.getRawButton(4) && aRightArm.getRawButton(3))){
+            theHybridDriveDirection = 0;
+        }
+
+        if(aRightArm.getRawButton(5)) {
+            if(theRelayFlag) {
+                theRelay.set(Relay.Value.kForward);
+                theRelayFlag = false;
+            }
+            else if (!theRelayFlag) {
+                theRelay.set(Relay.Value.kOff);
+            }   
+            theDriverStationLCD.println(DriverStationLCD.Line.kUser3, 1, "Button 3 pressed");
+            theDriverStationLCD.updateLCD();
+        }
+        else {
+            theDriverStationLCD.println(DriverStationLCD.Line.kUser3, 1, "                  ");
+            theDriverStationLCD.updateLCD();
+            theRelayFlag = true;
+        }
+        theRobotDrive.mecanumDrive_Polar(theHybridDriveMagnitude, theHybridDriveDirection, theHybridDriveRotation );
+        Timer.delay(.01);   // Delay 10ms to reduce processing load
+    }
+    /*----------------------------------------------------------------------------*/
     
     
     /*--------------------------------------------------------------------------*/
     /*
      * Author:  Gennaro De Luca
-     * Date:    11/26/2011 (Gennaro De Luca)
-     * Purpose: To determine the speed multiplier based on the "Z" wheel on 
-     *          the left joystick. If the "Z" wheel is up (negative), the multiplier remains at 1.
-     *          Otherwise, the multiplier is set to one-half.
+     * Date:    2/14/12
+     * Purpose: Determine which joystick is which
      * Inputs:  None
      * Outputs: None
      */    
-    public void setMaxSpeed(){
-        
-        if (theLeftStick.getZ() <= 0) {    // Logitech Attack3 has z-polarity reversed; up is negative
-            theMaxSpeed = 1;               //set the multiplier to default value of 1
-            if (DEBUG == true){
-                System.out.println("theLeftStick.getZ called");
-            }
+    public void determineJoystick() {
+        if(theLeftStick.getRawButton(6)) {
+            theDriverStationLCD.println(DriverStationLCD.Line.kMain6, 1, "Left       ");
         }
-        else if (theLeftStick.getZ() > 0) {
-            theMaxSpeed = 0.5;             //set the multiplier to half default, 0.5
-            if (DEBUG == true) {
-                System.out.println("theLeftStick.getZ called");
-            }
+        else if(theRightStick.getRawButton(6)) {
+            theDriverStationLCD.println(DriverStationLCD.Line.kMain6, 1, "Right      ");
         }
-        theRobotDrive.setMaxSpeed(theMaxSpeed); //tests the multiplier
+        else if(theShootingStick.getRawButton(6)) {
+            theDriverStationLCD.println(DriverStationLCD.Line.kMain6, 1, "Shooting");
+        }
+        theDriverStationLCD.updateLCD();
+    }
+   /*--------------------------------------------------------------------------*/
+    /*
+     * Author:  Team
+     * Date:    2/15/2012, 2/16/2012
+     * Purpose: Speed Controlled Shooting
+     * Inputs:  aJoystick
+     * Outputs: 
+     */    
+        public void shootWithJoystick(Joystick aStick){
+            
+            if(aStick.getRawButton(7) && shoot7ButtonPressable) {
+                joystickRunsShooter = !joystickRunsShooter;
+                shoot7ButtonPressable = false;
+                joystickRanShooter = false;
+            }
+            if(joystickRunsShooter) {
+                theTopShootingMotor.set(aStick.getMagnitude());
+                theBottomShootingMotor.set(-(aStick.getMagnitude()));
+                if(aStick.getRawButton(6) && shoot6ButtonPressable) {
+                    theJoystickSpeed = aStick.getMagnitude();
+                    joystickRunsShooter = false;
+                    joystickRanShooter = true;
+                }
+                else if(!aStick.getRawButton(6) && !shoot6ButtonPressable) {
+                    shoot6ButtonPressable = true;
+                }
+                if(aStick.getRawButton(8) && shoot8ButtonPressable) {
+                shoot8ButtonPressable = false;
+                shoot9ButtonSpeed = aStick.getMagnitude();
+                }
+                else if(!aStick.getRawButton(8) && !shoot8ButtonPressable) {
+                    shoot8ButtonPressable = true;
+                }
+            }
+            else if(!joystickRunsShooter && joystickRanShooter) {
+                theTopShootingMotor.set(theJoystickSpeed);
+                theBottomShootingMotor.set(-theJoystickSpeed);
+
+        }
+        else if(!joystickRunsShooter && button6Pressed) {
+            theTopShootingMotor.set(theJoystickSpeed);
+            theBottomShootingMotor.set(-theJoystickSpeed);
+        }
+        if (!aStick.getRawButton(7) && !shoot7ButtonPressable){
+            shoot7ButtonPressable = true;
+        }
     }
     /*--------------------------------------------------------------------------*/
-
-        /*--------------------------------------------------------------------------*/ 
+                
+    /*--------------------------------------------------------------------------*/
+    /*
+     * Author:  Marissa Beene
+     * Date:    10/30/2011 (Marissa Beene)
+     * Purpose: To use the motors to brake the robot. Takes the speed from the 
+     *          each motor and sends the reverse signal back.
+     * Inputs:  Double aSpeedRight - the speed of the right motor
+     *          Double aSpeedLeft - the speed of the left motor
+     * Outputs: None
+     */
+    
+    public void brake(double aSpeedLeft, double aSpeedRight){
+        theRobotDrive.tankDrive(-aSpeedLeft, -aSpeedRight); //drive the robot at opposite values
+        }
+    /*--------------------------------------------------------------------------*/
+    
+    
+    /*--------------------------------------------------------------------------*/
     /*
      * Author:  Marissa Beene
      * Date:    10/30/11
-     * Purpose: To determine if there is no signal being sent to the robot from 
-     *          either the left or right joystick.
+     * Purpose: To determine if there is no signal. First determines the drive
+     *          mode and discards the left stick if in arcade mode. If there is 
+     *          no signal to the drive train, it will return true, otherwise it 
+     *          will return false
      * Inputs:  Joystick aRightStick  - the right joystick
      *          Joystick aLeftStick - the left joystick
      * Outputs: Boolean - returns true if the drive train is not sent a signal
@@ -259,77 +828,107 @@ public class TPARobot extends IterativeRobot {
         if (DEBUG == true){
             System.out.println("isNeutral Called");
         }
-        if(aRightStick.getY() == 0 && aRightStick.getX() == 0 && aLeftStick.getY() == 0 && aLeftStick.getX() == 0){ //there is no input
-            return true;
+        if(theDriveMode == ARCADE_DRIVE){ //if arcade drive
+            if (DEBUG == true){
+                System.out.println("Arcade Drive Recognized by isNeutral");
+            }
+            if(aRightStick.getY() == 0 && aRightStick.getX() == 0){ //there is no input
+                return true;
+            }
+            else{
+                return false;
+            }
+        }
+        else if(theDriveMode == TANK_DRIVE){ //if tank drive
+            if (DEBUG == true){
+                System.out.println("Tank Drive Recognized by isNeutral");
+            }
+            if(aRightStick.getY() == 0 && aLeftStick.getY() == 0){
+                return true;
+            }
+            else{
+                return false;
+            }
         }
         else{
             return false;
-        }
+        } 
     }
     /*--------------------------------------------------------------------------*/
-
+    
     
     /*--------------------------------------------------------------------------*/
     /*
-     * Author:  Marissa Beene 
-     * Date:    1/14/2012
-     * Purpose: To brake the robot when no signal is being sent to it. Determines
-     *          the direction each motor is turning and then sends each motor the
-     *          stop value at the other direction.
+     * Author:  Marissa Beene
+     * Date:    11/5/11
+     * Purpose: To brake the robot if there is no signal in arcade mode. If the 
+     *          wheel is not considered stopped, it will read the direction that the wheel
+     *          is turning and send it the stop value in the other direction.
      * Inputs:  None
      * Outputs: None
-     */    
-    public void brakeOnNeutral(){
-        if (isNeutral(theRightStick, theLeftStick)){ //no signal
+     */
+    
+    public void brakeOnNeutral(){        
+        double theFrontLeftSpeedOutput = 0; // value the left motor will be sent
+        double theFrontRightSpeedOutput = 0;
+        double theRearLeftSpeedOutput = 0;
+        double theRearRightSpeedOutput = 0; // value the right motor will be sent
+        double theRightSpeedOutput = 0;
+        double theLeftSpeedOutput = 0;
+        
+        if (DEBUG == true){
+            System.out.println("brakeOnNeutral called");
+        }
+        
+        if(isNeutral(theRightStick, theLeftStick)){ // if no signal is sent to the robot
             
-            // Get the direction of the front left encoder and store the stop value vector to theFrontLeftOutput
-            if (!theFrontLeftEncoder.getStopped()){ // The wheel is moving
+            // get the direction of the left motor and store the stop value vector to theLeftSpeedOutput
+            if(!theFrontLeftEncoder.getStopped()){
                 if(theFrontLeftEncoder.getDirection()){
-                    theFrontLeftOutput = STOP_VALUE;
+                    theFrontLeftSpeedOutput = STOP_VALUE;
                 }
                 else{
-                    theFrontLeftOutput = -STOP_VALUE;
-                }
-            }
-                
-            // Get the direction of the front left encoder and store the stop value vector to theFrontLeftOutput
-            if (!theRearLeftEncoder.getStopped()){ // The wheel is moving
-                if(theRearLeftEncoder.getDirection()){
-                    theRearLeftOutput = STOP_VALUE;
-                }
-                else{
-                    theRearLeftOutput = -STOP_VALUE;
+                    theFrontLeftSpeedOutput = -STOP_VALUE;
                 }
             }
             
-            // Get the direction of the front left encoder and store the stop value vector to theFrontLeftOutput
-            if (!theFrontRightEncoder.getStopped()){ // The wheel is moving
+            // get the direction of the right motor and store a stop value vector to theRightSpeedOutput
+            if(!theFrontRightEncoder.getStopped()){
                 if(theFrontRightEncoder.getDirection()){
-                    theFrontRightOutput = STOP_VALUE;
+                    theFrontRightSpeedOutput = STOP_VALUE;
                 }
                 else{
-                    theFrontRightOutput = -STOP_VALUE;
+                    theFrontRightSpeedOutput = -STOP_VALUE;
                 }
             }
             
-            // Get the direction of the front left encoder and store the stop value vector to theFrontLeftOutput
-            if (!theRearRightEncoder.getStopped()){ // The wheel is moving
+            if(!theRearRightEncoder.getStopped()){
                 if(theRearRightEncoder.getDirection()){
-                    theRearRightOutput = STOP_VALUE;
+                    theRearRightSpeedOutput = STOP_VALUE;
                 }
                 else{
-                    theRearRightOutput = -STOP_VALUE;
+                    theRearRightSpeedOutput = -STOP_VALUE;
                 }
             }
-            theRobotDrive.mecanumBrake(theFrontLeftOutput, theRearLeftOutput, theFrontRightOutput, theRearRightOutput);
+            if(!theRearRightEncoder.getStopped()){
+                if(theRearRightEncoder.getDirection()){
+                    theRearRightSpeedOutput = STOP_VALUE;
+                }
+                else{
+                    theRearRightSpeedOutput = -STOP_VALUE;
+                }
+            }
+            theLeftSpeedOutput = (theRearLeftSpeedOutput + theFrontLeftSpeedOutput)/2;
+            theRightSpeedOutput = (theRearRightSpeedOutput + theFrontRightSpeedOutput)/2;
+        // brake the robot at the value of the stop value
+        brake(theLeftSpeedOutput, theRightSpeedOutput);
         }
     }
-
     /*--------------------------------------------------------------------------*/
 
     /*--------------------------------------------------------------------------*/
     /*
-     * Author:  
+     * Author: 
      * Date:    
      * Purpose: 
      * Inputs:  
@@ -337,6 +936,14 @@ public class TPARobot extends IterativeRobot {
      */    
     
     /*--------------------------------------------------------------------------*/
-
-
+    /*
+     * Author: 
+     * Date:    
+     * Purpose: 
+     * Inputs:  
+     * Outputs: 
+     */    
+    
+    /*--------------------------------------------------------------------------*/
 }
+    
