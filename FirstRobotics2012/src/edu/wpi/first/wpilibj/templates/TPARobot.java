@@ -45,10 +45,14 @@ public class TPARobot extends IterativeRobot {
     static boolean flipDriveDirection = false;      // Determines whether the robot is moving forward or backward
     static boolean conveyorMoving = false;          // Determines whether the conveyor is moving
     static boolean theRelayFlag = false;            // Is the relay on?
-    static double theAccumulatedDistance;
-    static int theDistancesCollected;
-    static double theAveragedDistance;
-    static double theDistance;                      // The distance returned by the ultrasonic sensor
+    double theAveragedDistance = 0;
+    int theRightDistancesCollected = 0;
+    double theRightAccumulatedDistance = 0;
+    int theLeftDistancesCollected = 0;
+    double theLeftAccumulatedDistance = 0;
+    int theFrontDistancesCollected = 0;
+    double theFrontAccumulatedDistance = 0;
+    double theDistance = 0;                      // The distance returned by the ultrasonic sensor
     Jaguar theConveyorMotor;                        // The motor on the conveyor belt
     Jaguar theTopShootingMotor;                     // The shooting motor on the top
     Jaguar theBottomShootingMotor;                  // The shooting motor on the bottom
@@ -73,7 +77,9 @@ public class TPARobot extends IterativeRobot {
     static final int ARCADE_DRIVE = 1;                          // Value when arcade mode is selected 
     static final int TANK_DRIVE = 2;                            // Value when tank drive is selected
     Compressor theCompressor;                       // The air compressor
-    TPAUltrasonicAnalogSensor theUltrasonicSensor;  // The ultrasonic sensor
+    TPAUltrasonicAnalogSensor theRightUltrasonicSensor;  // The ultrasonic sensor
+    TPAUltrasonicAnalogSensor theLeftUltrasonicSensor;  // The ultrasonic sensor
+    TPAUltrasonicAnalogSensor theFrontUltrasonicSensor;  // The ultrasonic sensor
     Relay theRelay;                                 // The Spike Relay
     
     double theSumFrontLeftSpeed =0;
@@ -143,7 +149,15 @@ public class TPARobot extends IterativeRobot {
         }
         
         // Initialize the Ultrasonic sensor at analog port 1 and digital port 14
-        theUltrasonicSensor = new TPAUltrasonicAnalogSensor(9,1);
+        theRightUltrasonicSensor = new TPAUltrasonicAnalogSensor(1);
+        if (DEBUG == true){
+            System.out.println("The ultrasonic sensor constructed successfully");
+        }
+         theLeftUltrasonicSensor = new TPAUltrasonicAnalogSensor(2);
+        if (DEBUG == true){
+            System.out.println("The ultrasonic sensor constructed successfully");
+        }
+         theFrontUltrasonicSensor = new TPAUltrasonicAnalogSensor(3);
         if (DEBUG == true){
             System.out.println("The ultrasonic sensor constructed successfully");
         }
@@ -296,7 +310,14 @@ public class TPARobot extends IterativeRobot {
         determineJoystick();
         
         shootWithJoystick(theShootingStick);
-/*
+        
+        runUltrasonicSensor(theRightUltrasonicSensor,1);
+        runUltrasonicSensor(theLeftUltrasonicSensor,2);
+        runUltrasonicSensor(theFrontUltrasonicSensor,3);
+        if(DEBUG==true) {
+            System.out.println("runUltrasonicSensor called");
+        }
+        /*
         // Brake the robot if no joysick input.
         brakeOnNeutral();
         if(DEBUG == true) {
@@ -537,21 +558,61 @@ public class TPARobot extends IterativeRobot {
      * Outputs: 
      */
 
-    public void runUltrasonicSensor(TPAUltrasonicAnalogSensor aSensor){
+    public void runUltrasonicSensor(TPAUltrasonicAnalogSensor aSensor, int aLine){
         // Read in distance and add to an accumulator
         theDistance = aSensor.getDistance();
-        theAccumulatedDistance = theAccumulatedDistance + theDistance;
-        theDistancesCollected = theDistancesCollected + 1;
-        // If enough distances have been collected, print the average value out and restart
-        if (theDistancesCollected == theAveragingValue){
-            theAveragedDistance = theAccumulatedDistance/theDistancesCollected;
-            theDriverStationLCD.println(DriverStationLCD.Line.kUser6,1, "" + theAveragedDistance);
-            theDriverStationLCD.updateLCD();
-            theAccumulatedDistance = 0;
-            theDistancesCollected = 0;
+        double aAccumulatedDistance =0;
+        int aDistancesCollected = 0;
+        if(aLine == 1){
+            aAccumulatedDistance = theRightAccumulatedDistance;
+            aDistancesCollected = theRightDistancesCollected;
         }
+        else if(aLine == 2){
+            aAccumulatedDistance = theLeftAccumulatedDistance;
+            aDistancesCollected = theLeftDistancesCollected;
+        }
+        else if(aLine == 3){
+            aAccumulatedDistance = theFrontAccumulatedDistance;
+            aDistancesCollected = theFrontDistancesCollected;
+        }
+        
+        aAccumulatedDistance += theDistance;
+        aDistancesCollected++;
+        
+        // If enough distances have been collected, print the average value out and restart
+        if (aDistancesCollected == theAveragingValue){
+            theAveragedDistance = aAccumulatedDistance/aDistancesCollected;
+            if(aLine == 1) {
+                theDriverStationLCD.println(DriverStationLCD.Line.kMain6 ,1, "Right: " + theAveragedDistance);
+            }
+            else if(aLine == 2) {
+                theDriverStationLCD.println(DriverStationLCD.Line.kUser2, 1, "Left: " + theAveragedDistance);
+            }
+            else if(aLine == 3) {
+                theDriverStationLCD.println(DriverStationLCD.Line.kUser3, 1, "Front: " + theAveragedDistance);
+            }
+            aAccumulatedDistance = 0;
+            aDistancesCollected = 0;
+        }
+        theDriverStationLCD.println(DriverStationLCD.Line.kUser4, 1, "Checking distance");
+        theDriverStationLCD.updateLCD();
+            
         if(DEBUG == true){
             System.out.println("Sensor Enabled");
+        }
+        theDriverStationLCD.updateLCD();
+        
+         if(aLine == 1){
+            theRightAccumulatedDistance = aAccumulatedDistance;
+            theRightDistancesCollected =aDistancesCollected;
+        }
+        else if(aLine == 2){
+            theLeftAccumulatedDistance=aAccumulatedDistance;
+            theLeftDistancesCollected =aDistancesCollected;
+        }
+        else if(aLine == 3){
+            theFrontAccumulatedDistance=aAccumulatedDistance;
+            theFrontDistancesCollected=aDistancesCollected;
         }
     }
     
