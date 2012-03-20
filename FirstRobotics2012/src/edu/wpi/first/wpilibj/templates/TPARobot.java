@@ -5,6 +5,7 @@
 /* the project.                                                               */
 /*----------------------------------------------------------------------------*/
 
+
 package edu.wpi.first.wpilibj.templates;
 
 
@@ -28,6 +29,8 @@ public class TPARobot extends IterativeRobot {
     static final double SHOOTING_SPEED_3 = 0.5;     // The speed of the shooter controlled by button 3
     static final double SHOOTING_SPEED_5 = 1.0;     // The speed of the shooter controlled by button 5
     static final double SHOOTING_SPEED_OFF = 0.0;   // Shooting speed, controlled by button 10
+    static final double HYBRID_SHOOTING_SPEED = 0.3;// Shooting speed in hybrid
+    static final double THE_AUTONOMOUS_SHOOTING_SPEED = 0.5;
     static double theJoystickSpeed = 0;             // Speed of shooters while Joystick controls speed
     static double shoot9ButtonSpeed = 0;            // Speed of shooters assigned to button 9 of shooting joystick
     static boolean joystickRunsShooter = false;     // Use the joystick to control the shooter  at a gradient
@@ -41,7 +44,9 @@ public class TPARobot extends IterativeRobot {
     static boolean shoot6ButtonPressable = true;    // Flag for pressability of button 6 on the shooting joystick
     static boolean shoot7ButtonPressable = true;    // Flag for pressability of button 7 on the shooting joystick
     static boolean shoot8ButtonPressable = true;    // Flag for pressability of button 8 on the shooting joystick
-    static boolean left1ButtonPressable = true;     // Flag for pressablity of the trigger on the left joystick
+    static boolean left1ButtonPressable = true;     // Flag for pressability of the trigger on the left joystick
+    static boolean kinect3ButtonPressable = true;   // Flag for pressability of the right leg kick on the kinect
+    static boolean kinect4ButtonPressable = true;   // Flag for pressability of the left kick on the kinect
     static boolean flipDriveDirection = false;      // Determines whether the robot is moving forward or backward
     static boolean conveyorMoving = false;          // Determines whether the conveyor is moving
     static boolean theRelayFlag = false;            // Is the relay on?
@@ -90,10 +95,7 @@ public class TPARobot extends IterativeRobot {
     int theNumberCollected=0;
     KinectStick theLeftArm;                         //Your Left Arm
     KinectStick theRightArm;                        //Your Right Arm
-    double theHybridDriveRotation;
-    double theHybridDriveMagnitude;
-    double theHybridDriveDirection;
-
+    DigitalInput theDigitalInput;
        
     /*--------------------------------------------------------------------------*/
     /*
@@ -195,7 +197,7 @@ public class TPARobot extends IterativeRobot {
                 System.out.println("CAMERA set to false");
             }
         }
-        
+        theDigitalInput = new DigitalInput(1);
                 
         if (DEBUG == true){
         System.out.println("RobotInit() completed.\n");
@@ -230,12 +232,11 @@ public class TPARobot extends IterativeRobot {
     public void autonomousPeriodic() {
         
         Watchdog.getInstance().feed();
-        //theDriverStationLCD.println(DriverStationLCD.Line.kMain6, 1, "Autonomous Mode Called");
-        //theDriverStationLCD.updateLCD();    //Displays a message to DriverStationLCD when entering Autonomous mode
-        runShooter(0);
-        hybridDrive(theLeftArm, theRightArm);
-        if (DEBUG == true) {
-            System.out.println("Hybrid Drive Called");
+        if(theDigitalInput.get()) {
+            hybridDrive(theLeftArm, theRightArm);
+        }
+        else if(!theDigitalInput.get()) {
+            autonomousMode();
         }
     }
     /*--------------------------------------------------------------------------*/
@@ -677,19 +678,10 @@ public class TPARobot extends IterativeRobot {
     
     /*--------------------------------------------------------------------------*/
         public void hybridDrive(KinectStick aLeftArm, KinectStick aRightArm) {
-            theHybridDriveRotation = aLeftArm.getY();
-            theHybridDriveMagnitude = aRightArm.getY();
-            if(aRightArm.getRawButton(3)){
-                theHybridDriveDirection = -90;
-            }
-            else if(aLeftArm.getRawButton(4)){
-                theHybridDriveDirection = 90;
-            }
-            else if(!(aLeftArm.getRawButton(4) && aRightArm.getRawButton(3))){
-                theHybridDriveDirection = 0;
-            }
             
-            if(aRightArm.getRawButton(5)) {
+            theRobotDrive.tankDrive(aLeftArm.getY()*.33, aRightArm.getY()*.33); //Drive in tank using  your two arms as joysticks
+          
+            if(aRightArm.getRawButton(5)) { // If you kick with your right leg
                 if(theRelayFlag) {
                    theRelay.set(Relay.Value.kForward);
                    theRelayFlag = false;
@@ -697,17 +689,59 @@ public class TPARobot extends IterativeRobot {
                else if (!theRelayFlag) {
                    theRelay.set(Relay.Value.kOff);
                }   
-                theDriverStationLCD.println(DriverStationLCD.Line.kUser3, 1, "Button 3 pressed");
+                theDriverStationLCD.println(DriverStationLCD.Line.kUser3, 1, "Button 5 pressed");
                 theDriverStationLCD.updateLCD();
             }
+                    
             else {
                 theDriverStationLCD.println(DriverStationLCD.Line.kUser3, 1, "                  ");
                 theDriverStationLCD.updateLCD();
                 theRelayFlag = true;
             }
-            theRobotDrive.mecanumDrive_Polar(theHybridDriveMagnitude, theHybridDriveDirection, theHybridDriveRotation );
+            
+            // Button 3 toggle conveyor belt
+            if(aRightArm.getRawButton(3) && kinect3ButtonPressable) { // If you move your right leg out
+                kinect3ButtonPressable = false;
+                theConveyorRunning = !theConveyorRunning;
+                theShooterRunning = false;
+            }
+            
+            else if(!aRightArm.getRawButton(3)){
+                kinect3ButtonPressable = true;
+            }
+            
+            //Button 4 toggles shooter
+            if(aRightArm.getRawButton(4) && kinect4ButtonPressable) { // If you move your left leg out
+            kinect4ButtonPressable = false;
+            theShooterRunning = !theShooterRunning;
+            theConveyorRunning = false;
+            }
+                    
+            else if(!aRightArm.getRawButton(4)){
+                kinect4ButtonPressable = true;
+            }
+            
+            // Run Conveyor or shooter as necesscary
+            if(theConveyorRunning){
+                theConveyorMotor.set(CONVEYOR_SPEED);
+            }
+            
+            if(!theConveyorRunning){
+                theConveyorMotor.set(0);
+            }
+            
+            if(theShooterRunning){
+                runShooter(HYBRID_SHOOTING_SPEED);
+            }
+            
+            if(!theShooterRunning){
+                runShooter(0);
+            }
+            
             Timer.delay(.01);   // Delay 10ms to reduce processing load
         }
+            
+
             
   /*---------------------------------------------------------------------------------------*/
     
@@ -911,6 +945,35 @@ public class TPARobot extends IterativeRobot {
     }
     /*--------------------------------------------------------------------------*/
 
+    
+    /*--------------------------------------------------------------------------*/
+    /*
+     * Author: Gennaro De Luca
+     * Date:   3/19/12 
+     * Purpose: Autonomous mode
+     * Inputs:  None
+     * Outputs: None
+     */    
+    
+    public void autonomousMode(){
+        while(DriverStation.getInstance().getMatchTime() > 5.0) {
+            runShooter(THE_AUTONOMOUS_SHOOTING_SPEED); //Turn the Shooting Motors on
+            Timer.delay(0.5);
+            theRelay.set(Relay.Value.kForward); //Place a ball in the shooter
+            Timer.delay(1.0); //Leave the loader up for a second, so that the ball can be shot
+            theRelay.set(Relay.Value.kOff); //Get the loader ready to receive another ball
+            runShooter(0);
+            runConveyor(null, CONVEYOR_SPEED);
+            Timer.delay(1.0);
+            runShooter(THE_AUTONOMOUS_SHOOTING_SPEED);
+            Timer.delay(0.5);
+            theRelay.set(Relay.Value.kForward); //Place a ball in the shooter
+            Timer.delay(1.0); //Leave the loader up for a second, so that the ball can be shot
+            theRelay.set(Relay.Value.kOff); //Get the loader ready to receive another ball
+        }
+    }
+    /*--------------------------------------------------------------------------*/
+
     /*--------------------------------------------------------------------------*/
     /*
      * Author: 
@@ -934,4 +997,3 @@ public class TPARobot extends IterativeRobot {
     /*--------------------------------------------------------------------------*/
 
 }
-    
