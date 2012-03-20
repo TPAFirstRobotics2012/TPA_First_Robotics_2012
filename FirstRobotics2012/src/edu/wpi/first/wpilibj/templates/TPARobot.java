@@ -34,7 +34,7 @@ public class TPARobot extends IterativeRobot {
     static double theJoystickSpeed = 0;             // Speed of shooters while Joystick controls speed
     static double shoot9ButtonSpeed = 0;            // Speed of shooters assigned to button 9 of shooting joystick
     static boolean joystickRunsShooter = false;     // Use the joystick to control the shooter  at a gradient
-    static boolean joystickRanShooter= false;       // True if the joystick used to run the shooter
+    static boolean button6SpeedUsed= false;       // True if the joystick used to run the shooter
     static final int theAveragingValue = 10;        
     double theShootingSpeed = 0.0;                  // The actual speed the shooter is running
     static boolean shoot2ButtonPressable = true;    // Flag for pressability of button 6 on the shooting joystick
@@ -311,8 +311,6 @@ public class TPARobot extends IterativeRobot {
         
         determineJoystick();
         
-        shootWithJoystick(theShootingStick);
-        
         runUltrasonicSensor(theRightUltrasonicSensor,1);
         runUltrasonicSensor(theLeftUltrasonicSensor,2);
         runUltrasonicSensor(theFrontUltrasonicSensor,3);
@@ -534,27 +532,58 @@ public class TPARobot extends IterativeRobot {
         if(aStick.getRawButton(4)){
             theShootingSpeed = SHOOTING_SPEED_4;
             joystickRunsShooter = false;
-            joystickRanShooter = false;
+            button6SpeedUsed = false;
         }
+        
         if(aStick.getRawButton(3)){
             theShootingSpeed = SHOOTING_SPEED_3;
             joystickRunsShooter = false;
-            joystickRanShooter = false;
+            button6SpeedUsed = false;
         }
+        
         if(aStick.getRawButton(5)){
             theShootingSpeed = SHOOTING_SPEED_5;
             joystickRunsShooter = false;
-            joystickRanShooter = false;
+            button6SpeedUsed = false;
         }
+        
         if(aStick.getRawButton(9)) {
             theShootingSpeed = shoot9ButtonSpeed;
             joystickRunsShooter = false;
-            joystickRanShooter = false;
+            button6SpeedUsed = false;
         }
+        
         if(aStick.getRawButton(10)) {
             theShootingSpeed = SHOOTING_SPEED_OFF;
             joystickRunsShooter = false;
-            joystickRanShooter = false;
+            button6SpeedUsed = false;
+        }
+        
+        if(aStick.getRawButton(7) && shoot7ButtonPressable) {
+            joystickRunsShooter = !joystickRunsShooter;
+            shoot7ButtonPressable = false;
+            button6SpeedUsed = false;
+        }
+        if (!aStick.getRawButton(7) && !shoot7ButtonPressable){
+            shoot7ButtonPressable = true;
+        }
+        
+        if(joystickRunsShooter) {
+            theShootingSpeed = aStick.getMagnitude();
+            if(aStick.getRawButton(6) && shoot6ButtonPressable) {
+                joystickRunsShooter = false;
+                button6SpeedUsed = true;
+            }
+            else if(!aStick.getRawButton(6) && !shoot6ButtonPressable) {
+                shoot6ButtonPressable = true;
+            }
+            if(aStick.getRawButton(8) && shoot8ButtonPressable) {
+            shoot8ButtonPressable = false;
+            shoot9ButtonSpeed = theShootingSpeed;
+            }
+            else if(!aStick.getRawButton(8) && !shoot8ButtonPressable) {
+                shoot8ButtonPressable = true;
+            }
         }
         return theShootingSpeed;
     }
@@ -770,48 +799,7 @@ public class TPARobot extends IterativeRobot {
         }
     
    /*--------------------------------------------------------------------------*/
-    /*
-     * Author:  Team
-     * Date:    2/15/2012, 2/16/2012
-     * Purpose: Speed Controlled Shooting
-     * Inputs:  aJoystick
-     * Outputs: 
-     */    
-        public void shootWithJoystick(Joystick aStick){
-            
-            if(aStick.getRawButton(7) && shoot7ButtonPressable) {
-                joystickRunsShooter = !joystickRunsShooter;
-                shoot7ButtonPressable = false;
-                joystickRanShooter = false;
-            }
-            if(joystickRunsShooter) {
-                theTopShootingMotor.set(aStick.getMagnitude());
-                theBottomShootingMotor.set(-(aStick.getMagnitude()));
-                if(aStick.getRawButton(6) && shoot6ButtonPressable) {
-                    theJoystickSpeed = aStick.getMagnitude();
-                    joystickRunsShooter = false;
-                    joystickRanShooter = true;
-                }
-                else if(!aStick.getRawButton(6) && !shoot6ButtonPressable) {
-                    shoot6ButtonPressable = true;
-                }
-                if(aStick.getRawButton(8) && shoot8ButtonPressable) {
-                shoot8ButtonPressable = false;
-                shoot9ButtonSpeed = aStick.getMagnitude();
-                }
-                else if(!aStick.getRawButton(8) && !shoot8ButtonPressable) {
-                    shoot8ButtonPressable = true;
-                }
-            }
-            else if(!joystickRunsShooter && joystickRanShooter) {
-                theTopShootingMotor.set(theJoystickSpeed);
-                theBottomShootingMotor.set(-theJoystickSpeed);
-            }
-            if (!aStick.getRawButton(7) && !shoot7ButtonPressable){
-                shoot7ButtonPressable = true;
-            }
-        }
-    /*--------------------------------------------------------------------------*/
+
                 
     /*--------------------------------------------------------------------------*/
     /*
