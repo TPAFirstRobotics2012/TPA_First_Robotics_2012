@@ -533,39 +533,48 @@ public class TPARobot extends IterativeRobot {
             theShootingSpeed = SHOOTING_SPEED_4;
             joystickRunsShooter = false;
             button6SpeedUsed = false;
+            theDriverStationLCD.println(DriverStationLCD.Line.kUser6,1,"4 ");
         }
         
         if(aStick.getRawButton(3)){
             theShootingSpeed = SHOOTING_SPEED_3;
             joystickRunsShooter = false;
             button6SpeedUsed = false;
+            theDriverStationLCD.println(DriverStationLCD.Line.kUser6,1,"3 ");
         }
         
         if(aStick.getRawButton(5)){
             theShootingSpeed = SHOOTING_SPEED_5;
             joystickRunsShooter = false;
             button6SpeedUsed = false;
+            theDriverStationLCD.println(DriverStationLCD.Line.kUser6,1,"5 ");
         }
         
         if(aStick.getRawButton(9)) {
             theShootingSpeed = shoot9ButtonSpeed;
             joystickRunsShooter = false;
             button6SpeedUsed = false;
+            theDriverStationLCD.println(DriverStationLCD.Line.kUser6,1,"9 ");
         }
         
         if(aStick.getRawButton(10)) {
             theShootingSpeed = SHOOTING_SPEED_OFF;
             joystickRunsShooter = false;
             button6SpeedUsed = false;
+            theDriverStationLCD.println(DriverStationLCD.Line.kUser6,1,"10");
         }
         
         if(aStick.getRawButton(7) && shoot7ButtonPressable) {
             joystickRunsShooter = !joystickRunsShooter;
             shoot7ButtonPressable = false;
             button6SpeedUsed = false;
+            theDriverStationLCD.println(DriverStationLCD.Line.kUser6,1,"7 ");
         }
         if (!aStick.getRawButton(7) && !shoot7ButtonPressable){
             shoot7ButtonPressable = true;
+            if (DEBUG == true){
+            theDriverStationLCD.println(DriverStationLCD.Line.kUser5,1,"Button 7 now Pressable ");
+            }
         }
         
         if(joystickRunsShooter) {
@@ -573,16 +582,24 @@ public class TPARobot extends IterativeRobot {
             if(aStick.getRawButton(6) && shoot6ButtonPressable) {
                 joystickRunsShooter = false;
                 button6SpeedUsed = true;
+                theDriverStationLCD.println(DriverStationLCD.Line.kUser6,1,"6 ");
             }
             else if(!aStick.getRawButton(6) && !shoot6ButtonPressable) {
                 shoot6ButtonPressable = true;
+                if (DEBUG == true){
+                theDriverStationLCD.println(DriverStationLCD.Line.kUser5,1,"Button 6 now Pressable ");
+                }
             }
             if(aStick.getRawButton(8) && shoot8ButtonPressable) {
-            shoot8ButtonPressable = false;
-            shoot9ButtonSpeed = theShootingSpeed;
+                shoot8ButtonPressable = false;
+                shoot9ButtonSpeed = theShootingSpeed;
+                theDriverStationLCD.println(DriverStationLCD.Line.kUser6,1,"8 ");
             }
             else if(!aStick.getRawButton(8) && !shoot8ButtonPressable) {
                 shoot8ButtonPressable = true;
+                if (DEBUG == true){
+                theDriverStationLCD.println(DriverStationLCD.Line.kUser5,1,"Button 8 now Pressable ");
+                }
             }
         }
         return theShootingSpeed;
