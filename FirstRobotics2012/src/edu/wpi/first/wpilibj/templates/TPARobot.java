@@ -149,7 +149,7 @@ public class TPARobot extends IterativeRobot {
             System.out.println("The Shooting Motors constructed successfully");
         }
         
-        // Initialize the Ultrasonic sensor at analog port 1 and digital port 14
+        // Initialize the Ultrasonic sensor at analog ports 1, 2, and 3
         theRightUltrasonicSensor = new TPAUltrasonicAnalogSensor(1);
         if (DEBUG == true){
             System.out.println("The ultrasonic sensor constructed successfully");
@@ -169,18 +169,18 @@ public class TPARobot extends IterativeRobot {
             System.out.println("DriverStationLCD initialized");
         }
         
-        //Initialize the Relay
+        //Initialize the Spike Relay
         theRelay = new Relay(2);
         if (DEBUG == true) {
             System.out.println("Relay initialized");
         }
         
         //Stretches out your arms and gets them ready to work
-            theLeftArm = new KinectStick(1);
-            theRightArm = new KinectStick(2);
-            if (DEBUG == true) {
-                System.out.println("Arms Stretched");
-            }
+        theLeftArm = new KinectStick(1);
+        theRightArm = new KinectStick(2);
+        if (DEBUG == true) {
+            System.out.println("Arms Stretched");
+        }
         //Initialize the AxisCamera
         if (CAMERA == true){
             theAxisCamera = AxisCamera.getInstance(); 
@@ -334,15 +334,14 @@ public class TPARobot extends IterativeRobot {
     /*
      * Author:  Marissa Beene
      * Date:    1/14/2012
-     * Purpose: To drive the robot with mecanum wheels with a FPS control system.
-     *          The left stick will control translational movement and the right
-     *          stick will control rotation.
+     * Purpose: To drive the robot in either arcade or tank drive. The Z-axis on
+     *          the right joystick will determine mode.
      * Inputs:  None
      * Outputs: None
      */    
      public void driveRobot() {
         // determine if tank or arcade mode, based upon position of "Z" wheel on kit joystick
-        if (theRightStick.getZ() <= 0) {    // Logitech Attack3 has z-polarity reversed; up is negative
+       if (theRightStick.getZ() <= 0) {    // Logitech Attack3 has z-polarity reversed; up is negative
             // use arcade drive
             if (DEBUG == true){
                 System.out.println("theRightStick.getZ called" );
@@ -371,7 +370,7 @@ public class TPARobot extends IterativeRobot {
                 System.out.println("Tank Drive\n");
                 theDriveMode = TANK_DRIVE;
             }
-        }
+        } 
     }
 
     /*--------------------------------------------------------------------------*/
