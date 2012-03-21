@@ -311,9 +311,9 @@ public class TPARobot extends IterativeRobot {
         
         determineJoystick();
         
-        runUltrasonicSensor(theRightUltrasonicSensor,1);
-        runUltrasonicSensor(theLeftUltrasonicSensor,2);
-        runUltrasonicSensor(theFrontUltrasonicSensor,3);
+        //runUltrasonicSensor(theRightUltrasonicSensor,1);
+        //runUltrasonicSensor(theLeftUltrasonicSensor,2);
+        //runUltrasonicSensor(theFrontUltrasonicSensor,3);
         if(DEBUG==true) {
             System.out.println("runUltrasonicSensor called");
         }
@@ -473,10 +473,6 @@ public class TPARobot extends IterativeRobot {
      */    
     
     public void runConveyor(Joystick aStick, double aSpeed){
-        if(aSpeed >= 0.1) {
-            theConveyorRunning = true;
-            theShooterRunning = false;
-        }
         if(theConveyorRunning) {
             if(shoot2ButtonPressable && aStick.getRawButton(2)){ // Toggle conveyor if the button is pressed
                 conveyorMoving = !conveyorMoving;
@@ -506,10 +502,6 @@ public class TPARobot extends IterativeRobot {
      */    
     
     public void runShooter(double aSpeed){
-        if(aSpeed >= 0.1) {
-            theShooterRunning = true;
-            theConveyorRunning = false;
-        }
         if(theShooterRunning) {
             theTopShootingMotor.set(aSpeed);
             theBottomShootingMotor.set(-aSpeed);
@@ -602,6 +594,7 @@ public class TPARobot extends IterativeRobot {
                 }
             }
         }
+        theDriverStationLCD.println(DriverStationLCD.Line.kUser2,1, "" + theShootingSpeed);
         return theShootingSpeed;
     }
     /*--------------------------------------------------------------------------*/
