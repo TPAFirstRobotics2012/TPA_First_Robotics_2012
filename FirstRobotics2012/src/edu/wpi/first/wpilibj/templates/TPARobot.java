@@ -44,7 +44,7 @@ public class TPARobot extends IterativeRobot {
     static boolean left1ButtonPressable = true;     // Flag for pressablity of the trigger on the left joystick
     static boolean flipDriveDirection = false;      // Determines whether the robot is moving forward or backward
     static boolean conveyorMoving = false;          // Determines whether the conveyor is moving
-    static boolean theRelayFlag = false;            // Is the relay on?
+    static boolean theRelayFlag = true;            // Is the relay on?
     static double theJoystickSpeed = 0;             // Speed of shooters while Joystick controls speed
     static double shoot9ButtonSpeed = 0;            // Speed of shooters assigned to button 9 of shooting joystick        
     static double theShootingSpeed = 0.0;           // The actual speed the shooter is running
@@ -95,7 +95,7 @@ public class TPARobot extends IterativeRobot {
     Joystick theRightStick;                         // Right joystick
     Joystick theLeftStick;                          // Left joystick
     Joystick theShootingStick;                      // The joystick used for all aspects of the shooting system
-    Solenoid theWedgeUp;                            //This Solenoid moves the wedge up and holds the ball in place
+    //Solenoid theWedgeUp;                            //This Solenoid moves the wedge up and holds the ball in place
     TPARobotDriver theRobotDrive;                   // Robot Drive System
     TPAUltrasonicAnalogSensor theUltrasonicSensorLeft;  // The ultrasonic sensor Left
     TPAUltrasonicAnalogSensor theUltrasonicSensorRight;  // The ultrasonic sensor Right
@@ -133,7 +133,7 @@ public class TPARobot extends IterativeRobot {
         }
         
         //Define Solenoids used to move ball into shooter
-        theWedgeUp = new Solenoid(2);
+        //theWedgeUp = new Solenoid(2);
 
         //Defines four E4P Motion Sensors at ports 1,2,3,4,5,6,7, and 8
        /* theFrontLeftEncoder = new Encoder(2,1);
@@ -305,13 +305,13 @@ public class TPARobot extends IterativeRobot {
         }
         
         // Run the Ultrasonic sensors.FRONT MUST ALWAYS BE THE LAST TO RUN!!!
-        runUltrasonicSensorRight(theUltrasonicSensorRight);
-        runUltrasonicSensorLeft(theUltrasonicSensorLeft);
+        //runUltrasonicSensorRight(theUltrasonicSensorRight);
+        //runUltrasonicSensorLeft(theUltrasonicSensorLeft);
         
-        runUltrasonicSensorFront(theUltrasonicSensorFront);
-        if (DEBUG == true){
-            System.out.println("runUltrasonicSensorLeft, Right, and Front called");
-        } 
+        //runUltrasonicSensorFront(theUltrasonicSensorFront);
+        //if (DEBUG == true){
+        //    System.out.println("runUltrasonicSensorLeft, Right, and Front called");
+        //} 
         
         dropBallIntoShooter(theShootingStick);
         if (DEBUG == true){
@@ -351,7 +351,7 @@ public class TPARobot extends IterativeRobot {
     public void driveRobot() {
         theDriveDirection = theLeftStick.getDirectionDegrees(); // Set the direction to the value of the left stick
         theDriveMagnitude = theLeftStick.getMagnitude();    // Set the magnitude to the value of the left stick
-        theDriveRotation = (theRightStick.getX()); // Set the rotation to the value of the right stick
+        theDriveRotation = (theRightStick.getY()); // Set the rotation to the value of the right stick
         //theRobotDrive.mecanumDrive_Polar(.3, 180, 0);
         if (DEBUG == true){ 
         System.out.println("The drive rotation in degrees" + theDriveRotation);
