@@ -166,12 +166,12 @@ public class TPARobot extends IterativeRobot {
         }
         
         // Initialize the Ultrasonic sensors at analog port 1,2,3
-        theUltrasonicSensorLeft = new TPAUltrasonicAnalogSensor(1);
+        /*theUltrasonicSensorLeft = new TPAUltrasonicAnalogSensor(1);
          theUltrasonicSensorRight = new TPAUltrasonicAnalogSensor(4);
           theUltrasonicSensorFront = new TPAUltrasonicAnalogSensor(3);
         if (DEBUG == true){
             System.out.println("The ultrasonic sensors constructed successfully");
-        }
+        } */
         
         //Initialize the DriverStationLCD
         theDriverStationLCD = DriverStationLCD.getInstance();
