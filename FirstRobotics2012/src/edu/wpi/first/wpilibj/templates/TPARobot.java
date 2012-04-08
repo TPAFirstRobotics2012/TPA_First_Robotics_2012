@@ -100,10 +100,9 @@ public class TPARobot extends IterativeRobot {
     TPAUltrasonicAnalogSensor theUltrasonicSensorLeft;  // The ultrasonic sensor Left
     TPAUltrasonicAnalogSensor theUltrasonicSensorRight;  // The ultrasonic sensor Right
     TPAUltrasonicAnalogSensor theUltrasonicSensorFront;  // The ultrasonic sensor Front
-    Relay theRelay;                                 // The Spike Relay
     KinectStick theLeftArm;                         // Kinect Driver's Left Arm
     KinectStick theRightArm;                        // Kinect Driver's Right Arm
-    
+    Victor theSolenoid;                             // Victor controlling the solenoid
 
     
     /*--------------------------------------------------------------------------*/
@@ -176,9 +175,9 @@ public class TPARobot extends IterativeRobot {
         }
         
         //Initialize the Relay
-        theRelay = new Relay(2);
+        theSolenoid = new Victor(8);
         if (DEBUG == true) {
-            System.out.println("Relay initialized");
+            System.out.println("Solenoid initialized");
         }
         
         //Stretches out your arms and gets them ready to work
@@ -501,7 +500,7 @@ public class TPARobot extends IterativeRobot {
      * Outputs: None
      */    
     public void runShooter(double aSpeed){
-        theTopShootingMotor.set(aSpeed);
+        theTopShootingMotor.set(-aSpeed);
         theBottomShootingMotor.set(-aSpeed);
     }    
     /*--------------------------------------------------------------------------*/
@@ -658,13 +657,13 @@ public class TPARobot extends IterativeRobot {
                 theDriverStationLCD.updateLCD();
             }
             if(theRelayFlag) {
-                theRelay.set(Relay.Value.kForward);
+                theSolenoid.set(1);
                 theRelayFlag = false;
             }            
         } 
         else if(!aStick.getRawButton(1)) {
             if(!theRelayFlag) {
-                theRelay.set(Relay.Value.kOff);
+                theSolenoid.set(0);
                 theRelayFlag = true;
             }
             theDriverStationLCD.println(DriverStationLCD.Line.kUser5, 1, "               ");
@@ -695,11 +694,11 @@ public class TPARobot extends IterativeRobot {
 
         if(aRightArm.getRawButton(5)) {
             if(theRelayFlag) {
-                theRelay.set(Relay.Value.kForward);
+                theSolenoid.set(1);
                 theRelayFlag = false;
             }
             else if (!theRelayFlag) {
-                theRelay.set(Relay.Value.kOff);
+                theSolenoid.set(0);
             }   
             theDriverStationLCD.println(DriverStationLCD.Line.kUser3, 1, "Button 3 pressed");
             theDriverStationLCD.updateLCD();
@@ -751,7 +750,7 @@ public class TPARobot extends IterativeRobot {
             button6Pressed = false;
         }
         if(joystickRunsShooter) {
-            theTopShootingMotor.set(aStick.getMagnitude());
+            theTopShootingMotor.set(-aStick.getMagnitude());
             theBottomShootingMotor.set(-(aStick.getMagnitude()));
             if(aStick.getRawButton(6) && shoot6ButtonPressable) {
                 theJoystickSpeed = aStick.getMagnitude();
@@ -770,7 +769,7 @@ public class TPARobot extends IterativeRobot {
             }
         }
         else if(!joystickRunsShooter && button6Pressed) {
-            theTopShootingMotor.set(theJoystickSpeed);
+            theTopShootingMotor.set(-theJoystickSpeed);
             theBottomShootingMotor.set(-theJoystickSpeed);
         }
         if (!aStick.getRawButton(7) && !shoot7ButtonPressable){
