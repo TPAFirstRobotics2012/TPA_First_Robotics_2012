@@ -83,9 +83,9 @@ public class TPARobot extends IterativeRobot {
     static double theSumFrontRightSpeed =0;
     static double theSumRearLeftSpeed =0;
     static double theSumRearRightSpeed =0;
-    static double theHybridDriveRotation;
-    static double theHybridDriveMagnitude;
-    static double theHybridDriveDirection;
+    static double theHybridDriveRotation = 0;
+    static double theHybridDriveMagnitude = 0;
+    static double theHybridDriveDirection = 0;
     static int theNumberCollected=0;
     
     AxisCamera theAxisCamera;                       // The camera
@@ -373,7 +373,7 @@ public class TPARobot extends IterativeRobot {
             else{
                 theDriveDirection = 180 + theDriveDirection;
             }
-           // theDriveRotation = -theDriveRotation;
+            theDriveRotation = -theDriveRotation;
             theRobotDrive.mecanumDrive_Polar(theDriveMagnitude, theDriveDirection, theDriveRotation);
         }
         if (DEBUG == true){
@@ -687,7 +687,7 @@ public class TPARobot extends IterativeRobot {
     public void hybridDrive(KinectStick aLeftArm, KinectStick aRightArm) {
         theHybridDriveRotation = aLeftArm.getY();
         theHybridDriveMagnitude = aRightArm.getY();
-        if(aRightArm.getRawButton(3)){
+        /*if(aRightArm.getRawButton(3)){
             theHybridDriveDirection = -90;
         }
         else if(aLeftArm.getRawButton(4)){
@@ -740,7 +740,7 @@ public class TPARobot extends IterativeRobot {
         }
         if(!theShooterRunning){
             runShooter(0);
-        }
+        } */
         theRobotDrive.mecanumDrive_Polar(theHybridDriveMagnitude, theHybridDriveDirection, theHybridDriveRotation );
         Timer.delay(.01);   // Delay 10ms to reduce processing load
     }
