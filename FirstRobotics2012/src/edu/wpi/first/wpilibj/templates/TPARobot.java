@@ -32,6 +32,7 @@ public class TPARobot extends IterativeRobot {
     static final int UNINITIALIZED_DRIVE = 0;       // Value when no drive mode is selected
     static final int ARCADE_DRIVE = 1;              // Value when arcade mode is selected 
     static final int TANK_DRIVE = 2;                // Value when tank drive is selected
+    static final double HYBRID_SHOOTING_SPEED = 0.3;
     static boolean joystickRunsShooter = false;     // Use the joystick to control the shooter  at a gradient
     static boolean button6Pressed = false;      // True if the joystick used to run the shooter
     static boolean shoot2ButtonPressable = true;    // Flag for pressability of button 6 on the shooting joystick
@@ -42,6 +43,10 @@ public class TPARobot extends IterativeRobot {
     static boolean shoot7ButtonPressable = true;    // Flag for pressability of button 7 on the shooting joystick
     static boolean shoot8ButtonPressable = true;    // Flag for pressability of button 8 on the shooting joystick
     static boolean left1ButtonPressable = true;     // Flag for pressablity of the trigger on the left joystick
+    static boolean kinect7ButtonPressable = true;
+    static boolean kinect8ButtonPressable = true;
+    static boolean theConveyorRunning = false;
+    static boolean theShooterRunning = false;
     static boolean flipDriveDirection = false;      // Determines whether the robot is moving forward or backward
     static boolean conveyorMoving = false;          // Determines whether the conveyor is moving
     static boolean theRelayFlag = true;            // Is the relay on?
@@ -241,7 +246,7 @@ public class TPARobot extends IterativeRobot {
     public void autonomousPeriodic() {
         
         Watchdog.getInstance().feed();
-        runShooter(0);
+        //runShooter(0);
         hybridDrive(theLeftArm, theRightArm);
         if (DEBUG == true) {
             System.out.println("Hybrid Drive Called");
@@ -707,6 +712,34 @@ public class TPARobot extends IterativeRobot {
             theDriverStationLCD.println(DriverStationLCD.Line.kUser3, 1, "                  ");
             theDriverStationLCD.updateLCD();
             theRelayFlag = true;
+        }
+        if(aLeftArm.getRawButton(7) && kinect7ButtonPressable) {
+            kinect7ButtonPressable = false;
+            theConveyorRunning = false;
+            theShooterRunning = !theShooterRunning;
+        }
+        else if(!aRightArm.getRawButton(7)) {
+            kinect7ButtonPressable = true;
+        }
+        if(aLeftArm.getRawButton(8) && kinect8ButtonPressable){
+            kinect8ButtonPressable = false;
+            theConveyorRunning = !theConveyorRunning;
+            theShooterRunning = false;
+        }
+        else if(!aRightArm.getRawButton(8)){
+            kinect8ButtonPressable = true;
+        }
+        if(theConveyorRunning){
+            theConveyorMotor.set(CONVEYOR_SPEED);
+        }
+        if(!theConveyorRunning){
+            theConveyorMotor.set(0);
+        }
+        if(theShooterRunning){
+            runShooter(HYBRID_SHOOTING_SPEED);
+        }
+        if(!theShooterRunning){
+            runShooter(0);
         }
         theRobotDrive.mecanumDrive_Polar(theHybridDriveMagnitude, theHybridDriveDirection, theHybridDriveRotation );
         Timer.delay(.01);   // Delay 10ms to reduce processing load
