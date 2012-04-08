@@ -43,6 +43,8 @@ public class TPARobot extends IterativeRobot {
     static boolean shoot7ButtonPressable = true;    // Flag for pressability of button 7 on the shooting joystick
     static boolean shoot8ButtonPressable = true;    // Flag for pressability of button 8 on the shooting joystick
     static boolean left1ButtonPressable = true;     // Flag for pressablity of the trigger on the left joystick
+    static boolean kinect3ButtonPressable = true;
+    static boolean kinect4ButtonPressable = true;
     static boolean kinect7ButtonPressable = true;
     static boolean kinect8ButtonPressable = true;
     static boolean theConveyorRunning = false;
@@ -741,6 +743,59 @@ public class TPARobot extends IterativeRobot {
         if(!theShooterRunning){
             runShooter(0);
         } */
+        if(aRightArm.getRawButton(5)) { // If you kick with your right leg
+                theSolenoid.set(1);
+                Timer.delay(1);
+                theRelayFlag = false;
+                theSolenoid.set(0);
+                theDriverStationLCD.println(DriverStationLCD.Line.kUser3, 1, "Button 5 pressed");
+                theDriverStationLCD.updateLCD();
+            }
+                    
+            else {
+                theDriverStationLCD.println(DriverStationLCD.Line.kUser3, 1, "                  ");
+                theDriverStationLCD.updateLCD();
+                theRelayFlag = true;
+            }
+            
+            // Button 3 toggle conveyor belt
+            if(aRightArm.getRawButton(3) && kinect3ButtonPressable) { // If you move your right leg out
+                kinect3ButtonPressable = false;
+                theConveyorRunning = !theConveyorRunning;
+                theShooterRunning = false;
+            }
+            
+            else if(!aRightArm.getRawButton(3)){
+                kinect3ButtonPressable = true;
+            }
+            
+            //Button 4 toggles shooter
+            if(aRightArm.getRawButton(4) && kinect4ButtonPressable) { // If you move your left leg out
+            kinect4ButtonPressable = false;
+            theShooterRunning = !theShooterRunning;
+            theConveyorRunning = false;
+            }
+                    
+            else if(!aRightArm.getRawButton(4)){
+                kinect4ButtonPressable = true;
+            }
+            
+            // Run Conveyor or shooter as necesscary
+            if(theConveyorRunning){
+                theConveyorMotor.set(CONVEYOR_SPEED);
+            }
+            
+            if(!theConveyorRunning){
+                theConveyorMotor.set(0);
+            }
+            
+            if(theShooterRunning){
+                runShooter(HYBRID_SHOOTING_SPEED);
+            }
+            
+            if(!theShooterRunning){
+                runShooter(0);
+            }
         theRobotDrive.mecanumDrive_Polar(theHybridDriveMagnitude, theHybridDriveDirection, theHybridDriveRotation );
         Timer.delay(.01);   // Delay 10ms to reduce processing load
     }
